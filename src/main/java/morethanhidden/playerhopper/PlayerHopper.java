@@ -39,7 +39,7 @@ public class PlayerHopper
 
     @ObjectHolder(MODID)
     public static class Items {
-        static final Item playerhopper = new BlockItem(Blocks.playerhopper, new Item.Properties());
+        static final Item playerhopper = new BlockItem(Blocks.playerhopper, new Item.Properties()).setRegistryName(Blocks.playerhopper.getRegistryName());
     }
 
     @Mod.EventBusSubscriber(bus=Mod.EventBusSubscriber.Bus.MOD)
