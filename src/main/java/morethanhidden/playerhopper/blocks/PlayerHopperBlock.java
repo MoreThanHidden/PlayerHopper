@@ -1,20 +1,19 @@
 package morethanhidden.playerhopper.blocks;
 
 import morethanhidden.playerhopper.PlayerHopper;
-import net.minecraft.block.HopperBlock;
-import net.minecraft.block.material.Material;
+import net.minecraft.block.BlockHopper;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.world.IBlockReader;
+import net.minecraft.world.World;
 
-public class PlayerHopperBlock extends HopperBlock {
+public class PlayerHopperBlock extends BlockHopper {
 
     public PlayerHopperBlock() {
-        super(Properties.create(Material.IRON));
+        super();
         setRegistryName(PlayerHopper.MODID, "playerhopper");
     }
 
     @Override
-    public TileEntity createNewTileEntity(IBlockReader blockReader) {
+    public TileEntity createNewTileEntity(World worldIn, int meta) {
         return new PlayerHopperTileEntity();
     }
 

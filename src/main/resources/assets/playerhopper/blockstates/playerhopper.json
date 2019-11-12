@@ -1,9 +1,9 @@
 {
     "variants": {
-        "facing=down": { "model": "playerhopper:block/playerhopper" },
-        "facing=north": { "model": "playerhopper:block/playerhopper_side" },
-        "facing=south": { "model": "playerhopper:block/playerhopper_side", "y": 180 },
-        "facing=west": { "model": "playerhopper:block/playerhopper_side", "y": 270 },
-        "facing=east": { "model": "playerhopper:block/playerhopper_side", "y": 90 }
+        "facing=down": { "model": "playerhopper:playerhopper" },
+        "facing=north": { "model": "playerhopper:playerhopper_side" },
+        "facing=south": { "model": "playerhopper:playerhopper_side", "y": 180 },
+        "facing=west": { "model": "playerhopper:playerhopper_side", "y": 270 },
+        "facing=east": { "model": "playerhopper:playerhopper_side", "y": 90 }
     }
 }
