@@ -1,0 +1,16 @@
+[
+{
+  "modid": "playerhopper",
+  "name": "Player Hopper",
+  "description": "Pull items from a player rather than a inventory",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["MoreThanHidden"],
+  "credits": "Bear989 for the idea during his stream.",
+  "logoFile": "logo.png",
+  "screenshots": [],
+  "dependencies": []
+}
+]

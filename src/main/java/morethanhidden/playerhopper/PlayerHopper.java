@@ -5,7 +5,6 @@ import morethanhidden.playerhopper.blocks.PlayerHopperTileEntity;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.client.event.ColorHandlerEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
@@ -55,12 +54,11 @@ public class PlayerHopper
 
         @SubscribeEvent
         public static void onBlocksRegistry(final RegistryEvent.Register<Block> blockRegistryEvent) {
-            // register a new block here
             blockRegistryEvent.getRegistry().register(Blocks.playerhopper);
+            GameRegistry.registerTileEntity(PlayerHopperTileEntity.class,  MODID + ":playerhopper");
         }
         @SubscribeEvent
         public static void onItemRegistry(final RegistryEvent.Register<Item> blockRegistryEvent) {
-            // register a new block here
             blockRegistryEvent.getRegistry().register(Items.playerhopper);
         }
     }

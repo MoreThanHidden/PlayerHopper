@@ -10,6 +10,7 @@ public class PlayerHopperBlock extends BlockHopper {
     public PlayerHopperBlock() {
         super();
         setRegistryName(PlayerHopper.MODID, "playerhopper");
+        setUnlocalizedName("playerhopper");
     }
 
     @Override
