@@ -5,14 +5,37 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.IHopper;
 import net.minecraft.tileentity.TileEntityHopper;
 import net.minecraft.util.EnumFacing;
 
-import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import java.util.stream.IntStream;
 
 public class PlayerHopperTileEntity extends TileEntityHopper {
+    List<UUID> playerWhitelist = new ArrayList<>();
+
+    @Override
+    public void readFromNBT(NBTTagCompound compound) {
+        playerWhitelist = new ArrayList<>();
+        for (int i = 0; i < compound.getInteger("whitelist_size"); i++) {
+            playerWhitelist.add(compound.getUniqueId("whitelist_" + i));
+        }
+        super.readFromNBT(compound);
+    }
+
+    @SuppressWarnings("NullableProblems")
+    @Override
+    public NBTTagCompound writeToNBT(NBTTagCompound compound) {
+        compound.setInteger("whitelist_size", playerWhitelist.size());
+        for (int i = 0; i < playerWhitelist.size(); i++) {
+            compound.setUniqueId("whitelist_" + i, playerWhitelist.get(i));
+        }
+        return super.writeToNBT(compound);
+    }
 
     @Override
     protected boolean updateHopper() {
@@ -25,7 +48,7 @@ public class PlayerHopperTileEntity extends TileEntityHopper {
                 }
 
                 if (!this.isFull()){
-                    flag = pullItems(this) || flag;
+                    flag = pullItems(this, playerWhitelist) || flag;
                 }
 
                 if (flag){
@@ -40,10 +63,10 @@ public class PlayerHopperTileEntity extends TileEntityHopper {
         }
     }
 
-    public static boolean pullItems(IHopper hopper) {
+    private static boolean pullItems(IHopper hopper, List<UUID> playerWhitelist) {
         Boolean ret = net.minecraftforge.items.VanillaInventoryCodeHooks.extractHook(hopper);
         if (ret != null) return ret;
-        IInventory iinventory = getSourceInventory(hopper);
+        IInventory iinventory = getSourceInventory(hopper, playerWhitelist);
         if (iinventory != null) {
             EnumFacing direction = EnumFacing.DOWN;
             return !isInventoryEmpty(iinventory, direction) && IntStream.range(0, iinventory.getSizeInventory()).anyMatch((slot) -> pullItemFromSlot(hopper, iinventory, slot, direction));
@@ -58,10 +81,10 @@ public class PlayerHopperTileEntity extends TileEntityHopper {
         }
     }
 
-    public static boolean captureItem(IInventory inventory, EntityItem item) {
+    private static boolean captureItem(IInventory inventory, EntityItem item) {
         boolean flag = false;
         ItemStack itemstack = item.getItem().copy();
-        ItemStack itemstack1 = putStackInInventoryAllSlots((IInventory)null, inventory, itemstack, (EnumFacing) null);
+        ItemStack itemstack1 = putStackInInventoryAllSlots(null, inventory, itemstack, null);
         if (itemstack1.isEmpty()) {
             flag = true;
             item.setItem(ItemStack.EMPTY);
@@ -79,7 +102,7 @@ public class PlayerHopperTileEntity extends TileEntityHopper {
         ItemStack itemstack = inventoryIn.getStackInSlot(index);
         if (!itemstack.isEmpty()) {
             ItemStack itemstack1 = itemstack.copy();
-            ItemStack itemstack2 = putStackInInventoryAllSlots(inventoryIn, hopper, inventoryIn.decrStackSize(index, 1), (EnumFacing) null);
+            ItemStack itemstack2 = putStackInInventoryAllSlots(inventoryIn, hopper, inventoryIn.decrStackSize(index, 1), null);
             if (itemstack2.isEmpty()) {
                 inventoryIn.markDirty();
                 return true;
@@ -99,10 +122,9 @@ public class PlayerHopperTileEntity extends TileEntityHopper {
     }
 
 
-    @Nullable
-    public static IInventory getSourceInventory(IHopper hopper) {
+    private static IInventory getSourceInventory(IHopper hopper, List<UUID> playerWhitelist) {
             EntityPlayer player = hopper.getWorld().getClosestPlayer(hopper.getXPos(), hopper.getYPos(), hopper.getZPos(), 1, false);
-            if(player != null)
+            if(player != null && playerWhitelist.contains(player.getUniqueID()))
                 return player.inventory;
         return null;
     }
