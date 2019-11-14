@@ -4,11 +4,11 @@ import net.minecraft.block.BlockHopper;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.IHopper;
 import net.minecraft.tileentity.TileEntityHopper;
-import net.minecraft.util.EnumFacing;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,12 +17,17 @@ import java.util.stream.IntStream;
 
 public class PlayerHopperTileEntity extends TileEntityHopper {
     List<UUID> playerWhitelist = new ArrayList<>();
+    List<String> itemBlacklist = new ArrayList<>();
 
     @Override
     public void readFromNBT(NBTTagCompound compound) {
         playerWhitelist = new ArrayList<>();
         for (int i = 0; i < compound.getInteger("whitelist_size"); i++) {
             playerWhitelist.add(compound.getUniqueId("whitelist_" + i));
+        }
+        itemBlacklist = new ArrayList<>();
+        for (int i = 0; i < compound.getInteger("blacklist_size"); i++) {
+            itemBlacklist.add(compound.getString("blacklist_" + i));
         }
         super.readFromNBT(compound);
     }
@@ -33,6 +38,10 @@ public class PlayerHopperTileEntity extends TileEntityHopper {
         compound.setInteger("whitelist_size", playerWhitelist.size());
         for (int i = 0; i < playerWhitelist.size(); i++) {
             compound.setUniqueId("whitelist_" + i, playerWhitelist.get(i));
+        }
+        compound.setInteger("blacklist_size", itemBlacklist.size());
+        for (int i = 0; i < itemBlacklist.size(); i++) {
+            compound.setString("blacklist_" + i, itemBlacklist.get(i));
         }
         return super.writeToNBT(compound);
     }
@@ -68,8 +77,7 @@ public class PlayerHopperTileEntity extends TileEntityHopper {
         if (ret != null) return ret;
         IInventory iinventory = getSourceInventory(hopper, playerWhitelist);
         if (iinventory != null) {
-            EnumFacing direction = EnumFacing.DOWN;
-            return !isInventoryEmpty(iinventory, direction) && IntStream.range(0, iinventory.getSizeInventory()).anyMatch((slot) -> pullItemFromSlot(hopper, iinventory, slot, direction));
+            return !isInventoryEmpty(iinventory) && IntStream.range(0, iinventory.getSizeInventory()).anyMatch((slot) -> pullItemFromSlot(hopper, iinventory, slot));
         } else {
             for(EntityItem itementity : getCaptureItems(hopper.getWorld(), hopper.getXPos(), hopper.getYPos(), hopper.getZPos())) {
                 if (captureItem(hopper, itementity)) {
@@ -98,7 +106,7 @@ public class PlayerHopperTileEntity extends TileEntityHopper {
      * Pulls from the specified slot in the inventory and places in any available slot in the hopper. Returns true if the
      * entire stack was moved
      */
-    private static boolean pullItemFromSlot(IHopper hopper, IInventory inventoryIn, int index, EnumFacing direction) {
+    private static boolean pullItemFromSlot(IHopper hopper, IInventory inventoryIn, int index) {
         ItemStack itemstack = inventoryIn.getStackInSlot(index);
         if (!itemstack.isEmpty()) {
             ItemStack itemstack1 = itemstack.copy();
@@ -117,7 +125,7 @@ public class PlayerHopperTileEntity extends TileEntityHopper {
     /**
      * Returns false if the specified IInventory contains any items
      */
-    private static boolean isInventoryEmpty(IInventory inventoryIn, EnumFacing side) {
+    private static boolean isInventoryEmpty(IInventory inventoryIn) {
         return IntStream.range(0, inventoryIn.getSizeInventory()).allMatch(i -> inventoryIn.getStackInSlot(i).isEmpty());
     }
 

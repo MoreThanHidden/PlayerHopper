@@ -76,12 +76,27 @@ public class PlayerHopperBlock extends BlockHopper {
         if (playerIn.isSneaking()){
             TileEntity tileentity = worldIn.getTileEntity(pos);
             if (tileentity instanceof PlayerHopperTileEntity && !worldIn.isRemote){
-                if(((PlayerHopperTileEntity) tileentity).playerWhitelist.contains(playerIn.getUniqueID())){
-                    ((PlayerHopperTileEntity)tileentity).playerWhitelist.remove(playerIn.getUniqueID());
-                    playerIn.sendMessage(new TextComponentTranslation("playerhopper.removed"));
-                }else {
-                    ((PlayerHopperTileEntity) tileentity).playerWhitelist.add(playerIn.getUniqueID());
-                    playerIn.sendMessage(new TextComponentTranslation("playerhopper.added"));
+                if(playerIn.getHeldItemMainhand().isEmpty()){
+                    if(((PlayerHopperTileEntity) tileentity).playerWhitelist.contains(playerIn.getUniqueID())){
+                        ((PlayerHopperTileEntity)tileentity).playerWhitelist.remove(playerIn.getUniqueID());
+                        playerIn.sendMessage(new TextComponentTranslation("playerhopper.player.removed"));
+                    }else {
+                        ((PlayerHopperTileEntity) tileentity).playerWhitelist.add(playerIn.getUniqueID());
+                        playerIn.sendMessage(new TextComponentTranslation("playerhopper.player.added"));
+                    }
+                }else{
+                    String itemName = playerIn.getHeldItemMainhand().getItem().getRegistryName().toString();
+                    if(((PlayerHopperTileEntity) tileentity).itemBlacklist.contains(itemName)){
+                        ((PlayerHopperTileEntity)tileentity).itemBlacklist.remove(itemName);
+                        playerIn.sendMessage(new TextComponentTranslation("playerhopper.item.removed.begin")
+                                .appendText(itemName)
+                                .appendSibling(new TextComponentTranslation("playerhopper.item.removed.end")));
+                    }else {
+                        ((PlayerHopperTileEntity) tileentity).itemBlacklist.add(itemName);
+                        playerIn.sendMessage(new TextComponentTranslation("playerhopper.item.added.begin")
+                                .appendText(itemName)
+                                .appendSibling(new TextComponentTranslation("playerhopper.item.added.end")));
+                    }
                 }
             }
             return true;
