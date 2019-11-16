@@ -57,7 +57,7 @@ public class PlayerHopperTileEntity extends TileEntityHopper {
                 }
 
                 if (!this.isFull()){
-                    flag = pullItems(this, playerWhitelist) || flag;
+                    flag = pullItems(this, playerWhitelist, itemBlacklist) || flag;
                 }
 
                 if (flag){
@@ -72,12 +72,12 @@ public class PlayerHopperTileEntity extends TileEntityHopper {
         }
     }
 
-    private static boolean pullItems(IHopper hopper, List<UUID> playerWhitelist) {
+    private static boolean pullItems(IHopper hopper, List<UUID> playerWhitelist, List<String> itemBlacklist) {
         Boolean ret = net.minecraftforge.items.VanillaInventoryCodeHooks.extractHook(hopper);
         if (ret != null) return ret;
         IInventory iinventory = getSourceInventory(hopper, playerWhitelist);
         if (iinventory != null) {
-            return !isInventoryEmpty(iinventory) && IntStream.range(0, iinventory.getSizeInventory()).anyMatch((slot) -> pullItemFromSlot(hopper, iinventory, slot));
+            return !isInventoryEmpty(iinventory) && IntStream.range(0, iinventory.getSizeInventory()).anyMatch((slot) -> pullItemFromSlot(hopper, iinventory, slot, itemBlacklist));
         } else {
             for(EntityItem itementity : getCaptureItems(hopper.getWorld(), hopper.getXPos(), hopper.getYPos(), hopper.getZPos())) {
                 if (captureItem(hopper, itementity)) {
@@ -106,9 +106,9 @@ public class PlayerHopperTileEntity extends TileEntityHopper {
      * Pulls from the specified slot in the inventory and places in any available slot in the hopper. Returns true if the
      * entire stack was moved
      */
-    private static boolean pullItemFromSlot(IHopper hopper, IInventory inventoryIn, int index) {
+    private static boolean pullItemFromSlot(IHopper hopper, IInventory inventoryIn, int index, List<String> itemBlacklist) {
         ItemStack itemstack = inventoryIn.getStackInSlot(index);
-        if (!itemstack.isEmpty()) {
+        if (!itemstack.isEmpty() && !itemBlacklist.contains(itemstack.getItem().getUnlocalizedName())){
             ItemStack itemstack1 = itemstack.copy();
             ItemStack itemstack2 = putStackInInventoryAllSlots(inventoryIn, hopper, inventoryIn.decrStackSize(index, 1), null);
             if (itemstack2.isEmpty()) {
