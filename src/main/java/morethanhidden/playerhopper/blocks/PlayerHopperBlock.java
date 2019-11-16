@@ -1,6 +1,7 @@
 package morethanhidden.playerhopper.blocks;
 
 import morethanhidden.playerhopper.PlayerHopper;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockHopper;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.state.IBlockState;
@@ -55,11 +56,23 @@ public class PlayerHopperBlock extends BlockHopper {
 
     @SuppressWarnings("NullableProblems")
     @Override
+    public void neighborChanged(IBlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos) {
+        /*
+        TODO: find out why this clears the hopper's inventory.
+        boolean flag = !worldIn.isBlockPowered(pos);
+        if (flag != state.getValue(ENABLED)){
+            worldIn.setBlockState(pos, state.withProperty(ENABLED, flag), 4);
+        }*/
+    }
+
+    @SuppressWarnings("NullableProblems")
+    @Override
     public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
         super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
         TileEntity tileentity = worldIn.getTileEntity(pos);
         if (tileentity instanceof PlayerHopperTileEntity){
             ((PlayerHopperTileEntity)tileentity).playerWhitelist.add(placer.getUniqueID());
+            tileentity.markDirty();
         }
     }
 
@@ -84,25 +97,37 @@ public class PlayerHopperBlock extends BlockHopper {
                         ((PlayerHopperTileEntity) tileentity).playerWhitelist.add(playerIn.getUniqueID());
                         playerIn.sendMessage(new TextComponentTranslation("playerhopper.player.added"));
                     }
-                }else{
-                    String itemName = playerIn.getHeldItemMainhand().getItem().getRegistryName().toString();
-                    if(((PlayerHopperTileEntity) tileentity).itemBlacklist.contains(itemName)){
-                        ((PlayerHopperTileEntity)tileentity).itemBlacklist.remove(itemName);
-                        playerIn.sendMessage(new TextComponentTranslation("playerhopper.item.removed.begin")
-                                .appendText(itemName)
-                                .appendSibling(new TextComponentTranslation("playerhopper.item.removed.end")));
-                    }else {
-                        ((PlayerHopperTileEntity) tileentity).itemBlacklist.add(itemName);
-                        playerIn.sendMessage(new TextComponentTranslation("playerhopper.item.added.begin")
-                                .appendText(itemName)
-                                .appendSibling(new TextComponentTranslation("playerhopper.item.added.end")));
-                    }
+                    tileentity.markDirty();
                 }
             }
             return true;
         }
 
         return super.onBlockActivated(worldIn, pos, state, playerIn, hand, facing, hitX, hitY, hitZ);
+    }
+
+    @Override
+    public void onBlockClicked(World worldIn, BlockPos pos, EntityPlayer playerIn) {
+        if (playerIn.isSneaking() && !playerIn.getHeldItemMainhand().isEmpty()) {
+            TileEntity tileentity = worldIn.getTileEntity(pos);
+            if (tileentity instanceof PlayerHopperTileEntity && !worldIn.isRemote) {
+                String itemName = playerIn.getHeldItemMainhand().getItem().getUnlocalizedName();
+                if (((PlayerHopperTileEntity) tileentity).itemBlacklist.contains(itemName)) {
+                    ((PlayerHopperTileEntity) tileentity).itemBlacklist.remove(itemName);
+                    playerIn.sendMessage(new TextComponentTranslation("playerhopper.item.removed.begin")
+                            .appendText(" ")
+                            .appendSibling(new TextComponentTranslation(itemName + ".name"))
+                            .appendSibling(new TextComponentTranslation("playerhopper.item.removed.end")));
+                } else {
+                    ((PlayerHopperTileEntity) tileentity).itemBlacklist.add(itemName);
+                    playerIn.sendMessage(new TextComponentTranslation("playerhopper.item.added.begin")
+                            .appendText(" ")
+                            .appendSibling(new TextComponentTranslation(itemName + ".name"))
+                            .appendSibling(new TextComponentTranslation("playerhopper.item.added.end")));
+                }
+            }
+        }
+        super.onBlockClicked(worldIn, pos, playerIn);
     }
 
     @Override
