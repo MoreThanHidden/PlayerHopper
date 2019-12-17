@@ -8,10 +8,10 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
@@ -39,8 +39,8 @@ public class PlayerHopperBlock extends HopperBlock {
     }
 
     @Override
-    public boolean onBlockActivated(BlockState state, World worldIn, BlockPos pos, PlayerEntity playerIn, Hand hand, BlockRayTraceResult rayTraceResult) {
-        if (playerIn.isSneaking()){
+    public ActionResultType func_225533_a_(BlockState state, World worldIn, BlockPos pos, PlayerEntity playerIn, Hand hand, BlockRayTraceResult rayTraceResult) {
+        if (playerIn.isCrouching()){
             TileEntity tileentity = worldIn.getTileEntity(pos);
             if (tileentity instanceof PlayerHopperTileEntity && !worldIn.isRemote){
                 if(playerIn.getHeldItemMainhand().isEmpty()){
@@ -54,16 +54,15 @@ public class PlayerHopperBlock extends HopperBlock {
                     tileentity.markDirty();
                 }
             }
-            return true;
+            return ActionResultType.SUCCESS;
         }
 
-        return super.onBlockActivated(state, worldIn, pos, playerIn, hand, rayTraceResult);
+        return super.func_225533_a_(state, worldIn, pos, playerIn, hand, rayTraceResult);
     }
-
 
     @Override
     public void onBlockClicked(BlockState state, World worldIn, BlockPos pos, PlayerEntity playerIn) {
-        if (playerIn.isSneaking() && !playerIn.getHeldItemMainhand().isEmpty()) {
+        if (playerIn.isCrouching() && !playerIn.getHeldItemMainhand().isEmpty()) {
             TileEntity tileentity = worldIn.getTileEntity(pos);
             if (tileentity instanceof PlayerHopperTileEntity && !worldIn.isRemote) {
                 String itemName = playerIn.getHeldItemMainhand().getItem().getTranslationKey();
