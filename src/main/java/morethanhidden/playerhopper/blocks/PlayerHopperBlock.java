@@ -28,6 +28,7 @@ public class PlayerHopperBlock extends HopperBlock {
         return new PlayerHopperTileEntity();
     }
 
+    @SuppressWarnings("NullableProblems")
     @Override
     public void onBlockPlacedBy(World worldIn, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
         super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
@@ -38,8 +39,9 @@ public class PlayerHopperBlock extends HopperBlock {
         }
     }
 
+    @SuppressWarnings("NullableProblems")
     @Override
-    public ActionResultType func_225533_a_(BlockState state, World worldIn, BlockPos pos, PlayerEntity playerIn, Hand hand, BlockRayTraceResult rayTraceResult) {
+    public ActionResultType onBlockActivated(BlockState state, World worldIn, BlockPos pos, PlayerEntity playerIn, Hand hand, BlockRayTraceResult rayTraceResult) {
         if (playerIn.isCrouching()){
             TileEntity tileentity = worldIn.getTileEntity(pos);
             if (tileentity instanceof PlayerHopperTileEntity && !worldIn.isRemote){
@@ -57,9 +59,10 @@ public class PlayerHopperBlock extends HopperBlock {
             return ActionResultType.SUCCESS;
         }
 
-        return super.func_225533_a_(state, worldIn, pos, playerIn, hand, rayTraceResult);
+        return super.onBlockActivated(state, worldIn, pos, playerIn, hand, rayTraceResult);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void onBlockClicked(BlockState state, World worldIn, BlockPos pos, PlayerEntity playerIn) {
         if (playerIn.isCrouching() && !playerIn.getHeldItemMainhand().isEmpty()) {
