@@ -5,6 +5,7 @@ import morethanhidden.playerhopper.blocks.PlayerHopperTileEntity;
 import net.minecraft.block.Block;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -46,12 +47,12 @@ public class PlayerHopper
     @SubscribeEvent
     @OnlyIn(Dist.CLIENT)
     public void itemColor(ColorHandlerEvent.Item event) {
-        event.getItemColors().register((itemStack, i) -> 3361970, Item.getItemFromBlock(Blocks.playerhopper));
+        event.getItemColors().register((itemStack, i) -> 3361970, Item.BLOCK_TO_ITEM.get(Blocks.playerhopper));
     }
 
     @ObjectHolder(MODID)
     public static class Items {
-        static final Item playerhopper = new BlockItem(Blocks.playerhopper, new Item.Properties()).setRegistryName(Blocks.playerhopper.getRegistryName());
+        static final Item playerhopper = new BlockItem(Blocks.playerhopper, new Item.Properties().group(ItemGroup.REDSTONE)).setRegistryName("playerhopper:playerhopper");
     }
 
     @Mod.EventBusSubscriber(bus=Mod.EventBusSubscriber.Bus.MOD)
@@ -67,9 +68,10 @@ public class PlayerHopper
             // register a new block here
             blockRegistryEvent.getRegistry().register(Items.playerhopper);
         }
+        @SuppressWarnings("ConstantConditions")
         @SubscribeEvent
         public static void onTileEntityTypeRegistry(final RegistryEvent.Register<TileEntityType<?>> event) {
-            event.getRegistry().register(TileEntityType.Builder.create(PlayerHopperTileEntity::new, Blocks.playerhopper).build(null).setRegistryName(Blocks.playerhopper.getRegistryName()));
+            event.getRegistry().register(TileEntityType.Builder.create(PlayerHopperTileEntity::new, Blocks.playerhopper).build(null).setRegistryName("playerhopper:playerhopper"));
         }
     }
 }
