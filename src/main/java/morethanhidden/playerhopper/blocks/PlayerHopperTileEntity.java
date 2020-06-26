@@ -1,6 +1,7 @@
 package morethanhidden.playerhopper.blocks;
 
 import morethanhidden.playerhopper.PlayerHopper;
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.IInventory;
@@ -23,7 +24,7 @@ public class PlayerHopperTileEntity extends HopperTileEntity {
 
 
     @Override
-    public void read(CompoundNBT compound) {
+    public void func_230337_a_(BlockState state,  CompoundNBT compound) {
         playerWhitelist = new ArrayList<>();
         for (int i = 0; i < compound.getInt("whitelist_size"); i++) {
             playerWhitelist.add(compound.getUniqueId("whitelist_" + i));
@@ -32,7 +33,7 @@ public class PlayerHopperTileEntity extends HopperTileEntity {
         for (int i = 0; i < compound.getInt("blacklist_size"); i++) {
             itemBlacklist.add(compound.getString("blacklist_" + i));
         }
-        super.read(compound);
+        super.func_230337_a_(state, compound);
     }
 
     @Override
