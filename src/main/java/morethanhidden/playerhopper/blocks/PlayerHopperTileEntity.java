@@ -3,6 +3,7 @@ package morethanhidden.playerhopper.blocks;
 import net.minecraft.block.BlockHopper;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -18,6 +19,7 @@ import java.util.stream.IntStream;
 public class PlayerHopperTileEntity extends TileEntityHopper {
     List<UUID> playerWhitelist = new ArrayList<>();
     List<String> itemBlacklist = new ArrayList<>();
+    PlayerHopperMode mode = PlayerHopperMode.INVENTORY;
 
     @Override
     public void readFromNBT(NBTTagCompound compound) {
@@ -29,6 +31,7 @@ public class PlayerHopperTileEntity extends TileEntityHopper {
         for (int i = 0; i < compound.getInteger("blacklist_size"); i++) {
             itemBlacklist.add(compound.getString("blacklist_" + i));
         }
+        mode = PlayerHopperMode.valueOf(compound.getString(mode.name()));
         super.readFromNBT(compound);
     }
 
@@ -43,6 +46,7 @@ public class PlayerHopperTileEntity extends TileEntityHopper {
         for (int i = 0; i < itemBlacklist.size(); i++) {
             compound.setString("blacklist_" + i, itemBlacklist.get(i));
         }
+        compound.setString("mode", mode.name());
         return super.writeToNBT(compound);
     }
 
@@ -57,7 +61,7 @@ public class PlayerHopperTileEntity extends TileEntityHopper {
                 }
 
                 if (!this.isFull()){
-                    flag = pullItems(this, playerWhitelist, itemBlacklist) || flag;
+                    flag = pullItems(this, playerWhitelist, itemBlacklist, mode) || flag;
                 }
 
                 if (flag){
@@ -72,12 +76,25 @@ public class PlayerHopperTileEntity extends TileEntityHopper {
         }
     }
 
-    private static boolean pullItems(IHopper hopper, List<UUID> playerWhitelist, List<String> itemBlacklist) {
+    private static boolean pullItems(IHopper hopper, List<UUID> playerWhitelist, List<String> itemBlacklist, PlayerHopperMode mode) {
         Boolean ret = net.minecraftforge.items.VanillaInventoryCodeHooks.extractHook(hopper);
         if (ret != null) return ret;
         IInventory iinventory = getSourceInventory(hopper, playerWhitelist);
-        if (iinventory != null) {
-            return !isInventoryEmpty(iinventory) && IntStream.range(0, iinventory.getSizeInventory()).anyMatch((slot) -> pullItemFromSlot(hopper, iinventory, slot, itemBlacklist));
+        if (iinventory instanceof InventoryPlayer) {
+            boolean output = false;
+            //Inventory
+            if(mode.equals(PlayerHopperMode.INVENTORY) || mode.equals(PlayerHopperMode.ARMOR_HOTBAR_INVENTORY) || mode.equals(PlayerHopperMode.ARMOR_INVENTORY) || mode.equals(PlayerHopperMode.HOTBAR_INVENTORY)){
+               output = !isInventoryEmpty(iinventory) && IntStream.range(9, 36).anyMatch((slot) -> pullItemFromSlot(hopper, iinventory, slot, itemBlacklist));
+            }
+            //Hotbar
+            if(mode.equals(PlayerHopperMode.HOTBAR) || mode.equals(PlayerHopperMode.ARMOR_HOTBAR_INVENTORY) || mode.equals(PlayerHopperMode.HOTBAR_INVENTORY) || mode.equals(PlayerHopperMode.ARMOR_HOTBAR)){
+                output = !isInventoryEmpty(iinventory) && IntStream.range(0, 9).anyMatch((slot) -> pullItemFromSlot(hopper, iinventory, slot, itemBlacklist)) || output;
+            }
+            //Armor
+            if(mode.equals(PlayerHopperMode.ARMOR) || mode.equals(PlayerHopperMode.ARMOR_HOTBAR_INVENTORY) || mode.equals(PlayerHopperMode.ARMOR_INVENTORY) || mode.equals(PlayerHopperMode.ARMOR_HOTBAR)){
+                output = !isInventoryEmpty(iinventory) && IntStream.range(37, 42).anyMatch((slot) -> pullItemFromSlot(hopper, iinventory, slot, itemBlacklist)) || output;
+            }
+            return output;
         } else {
             for(EntityItem itementity : getCaptureItems(hopper.getWorld(), hopper.getXPos(), hopper.getYPos(), hopper.getZPos())) {
                 if (captureItem(hopper, itementity)) {
