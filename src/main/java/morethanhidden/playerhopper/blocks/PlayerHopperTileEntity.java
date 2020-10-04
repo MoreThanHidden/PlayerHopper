@@ -8,9 +8,12 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.IHopper;
 import net.minecraft.tileentity.TileEntityHopper;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -153,5 +156,23 @@ public class PlayerHopperTileEntity extends TileEntityHopper {
                 return player.inventory;
         return null;
     }
+
+    @Nullable
+    @Override
+    public SPacketUpdateTileEntity getUpdatePacket() {
+        return new SPacketUpdateTileEntity(this.pos, 3, this.getUpdateTag());
+    }
+
+    @Override
+    public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
+        readFromNBT(pkt.getNbtCompound());
+        handleUpdateTag(pkt.getNbtCompound());
+    }
+
+    @Override
+    public NBTTagCompound getUpdateTag() {
+        return this.writeToNBT(new NBTTagCompound());
+    }
+
 
 }
