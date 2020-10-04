@@ -106,6 +106,7 @@ public class PlayerHopperBlock extends BlockHopper {
         return super.onBlockActivated(worldIn, pos, state, playerIn, hand, facing, hitX, hitY, hitZ);
     }
 
+    @SuppressWarnings("NullableProblems")
     @Override
     public void onBlockClicked(World worldIn, BlockPos pos, EntityPlayer playerIn) {
         if (playerIn.isSneaking() && !playerIn.getHeldItemMainhand().isEmpty()) {
@@ -126,10 +127,21 @@ public class PlayerHopperBlock extends BlockHopper {
                             .appendSibling(new TextComponentTranslation("playerhopper.item.added.end")));
                 }
             }
+        }else if(playerIn.isSneaking() && playerIn.getHeldItemMainhand().isEmpty()){
+            TileEntity tileentity = worldIn.getTileEntity(pos);
+            if (tileentity instanceof PlayerHopperTileEntity && !worldIn.isRemote) {
+                //Change Hopper Mode
+                int currentMode = ((PlayerHopperTileEntity) tileentity).mode.ordinal();
+                int newMode = currentMode == PlayerHopperMode.values().length - 1 ? 0 : currentMode + 1;
+                ((PlayerHopperTileEntity) tileentity).mode = PlayerHopperMode.values()[newMode];
+                playerIn.sendMessage(new TextComponentTranslation("playerhopper.modechange").appendText(" ").appendSibling(new TextComponentTranslation("playerhopper.mode." + ((PlayerHopperTileEntity) tileentity).mode.name().toLowerCase())));
+                tileentity.markDirty();
+            }
         }
         super.onBlockClicked(worldIn, pos, playerIn);
     }
 
+    @SuppressWarnings("NullableProblems")
     @Override
     public TileEntity createNewTileEntity(World worldIn, int meta) {
         return new PlayerHopperTileEntity();
