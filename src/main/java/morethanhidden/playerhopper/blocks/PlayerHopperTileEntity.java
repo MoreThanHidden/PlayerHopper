@@ -34,7 +34,7 @@ public class PlayerHopperTileEntity extends TileEntityHopper {
         for (int i = 0; i < compound.getInteger("blacklist_size"); i++) {
             itemBlacklist.add(compound.getString("blacklist_" + i));
         }
-        mode = PlayerHopperMode.valueOf(compound.getString(mode.name()));
+        mode = PlayerHopperMode.valueOf(compound.getString("mode"));
         super.readFromNBT(compound);
     }
 
