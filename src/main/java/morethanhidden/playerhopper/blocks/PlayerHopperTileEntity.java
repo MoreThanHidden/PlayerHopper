@@ -92,7 +92,7 @@ public class PlayerHopperTileEntity extends TileEntityHopper {
             }
             //Armor
             if(mode.equals(PlayerHopperMode.ARMOR) || mode.equals(PlayerHopperMode.ARMOR_HOTBAR_INVENTORY) || mode.equals(PlayerHopperMode.ARMOR_INVENTORY) || mode.equals(PlayerHopperMode.ARMOR_HOTBAR)){
-                output = !isInventoryEmpty(iinventory) && IntStream.range(37, 42).anyMatch((slot) -> pullItemFromSlot(hopper, iinventory, slot, itemBlacklist)) || output;
+                output = !isInventoryEmpty(iinventory) && IntStream.range(36, 42).anyMatch((slot) -> pullItemFromSlot(hopper, iinventory, slot, itemBlacklist)) || output;
             }
             return output;
         } else {
