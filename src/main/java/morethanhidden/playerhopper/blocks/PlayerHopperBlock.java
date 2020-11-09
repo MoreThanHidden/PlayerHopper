@@ -52,10 +52,10 @@ public class PlayerHopperBlock extends HopperBlock {
                 if(playerIn.getHeldItemMainhand().isEmpty()){
                     if(((PlayerHopperTileEntity) tileentity).playerWhitelist.contains(playerIn.getUniqueID())){
                         ((PlayerHopperTileEntity)tileentity).playerWhitelist.remove(playerIn.getUniqueID());
-                        playerIn.sendMessage(new TranslationTextComponent("playerhopper.player.removed"), Util.field_240973_b_);
+                        playerIn.sendMessage(new TranslationTextComponent("playerhopper.player.removed"), Util.DUMMY_UUID);
                     }else {
                         ((PlayerHopperTileEntity) tileentity).playerWhitelist.add(playerIn.getUniqueID());
-                        playerIn.sendMessage(new TranslationTextComponent("playerhopper.player.added"), Util.field_240973_b_);
+                        playerIn.sendMessage(new TranslationTextComponent("playerhopper.player.added"), Util.DUMMY_UUID);
                     }
                     tileentity.markDirty();
                 }
@@ -76,13 +76,13 @@ public class PlayerHopperBlock extends HopperBlock {
                 if (((PlayerHopperTileEntity) tileentity).itemBlacklist.contains(itemName)) {
                     ((PlayerHopperTileEntity) tileentity).itemBlacklist.remove(itemName);
                     playerIn.sendMessage(new TranslationTextComponent("playerhopper.item.removed.begin")
-                            .func_230529_a_(new TranslationTextComponent(itemName))
-                            .func_230529_a_(new TranslationTextComponent("playerhopper.item.removed.end")), Util.field_240973_b_);
+                            .append(new TranslationTextComponent(itemName))
+                            .append(new TranslationTextComponent("playerhopper.item.removed.end")), Util.DUMMY_UUID);
                 } else {
                     ((PlayerHopperTileEntity) tileentity).itemBlacklist.add(itemName);
                     playerIn.sendMessage(new TranslationTextComponent("playerhopper.item.added.begin")
-                            .func_230529_a_(new TranslationTextComponent(itemName))
-                            .func_230529_a_(new TranslationTextComponent("playerhopper.item.added.end")), Util.field_240973_b_);
+                            .append(new TranslationTextComponent(itemName))
+                            .append(new TranslationTextComponent("playerhopper.item.added.end")), Util.DUMMY_UUID);
                 }
             }
         }
