@@ -14,6 +14,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
@@ -84,6 +85,16 @@ public class PlayerHopperBlock extends HopperBlock {
                             .append(new TranslationTextComponent(itemName))
                             .append(new TranslationTextComponent("playerhopper.item.added.end")), Util.DUMMY_UUID);
                 }
+            }
+        }else if(playerIn.isSneaking() && playerIn.getHeldItemMainhand().isEmpty()){
+            TileEntity tileentity = worldIn.getTileEntity(pos);
+            if (tileentity instanceof PlayerHopperTileEntity && !worldIn.isRemote) {
+                //Change Hopper Mode
+                int currentMode = ((PlayerHopperTileEntity) tileentity).mode.ordinal();
+                int newMode = currentMode == PlayerHopperMode.values().length - 1 ? 0 : currentMode + 1;
+                ((PlayerHopperTileEntity) tileentity).mode = PlayerHopperMode.values()[newMode];
+                playerIn.sendMessage(new TranslationTextComponent("playerhopper.modechange").appendString(" ").append(new TranslationTextComponent("playerhopper.mode." + ((PlayerHopperTileEntity) tileentity).mode.name().toLowerCase())), Util.DUMMY_UUID);
+                tileentity.markDirty();
             }
         }
         super.onBlockClicked(state, worldIn, pos, playerIn);

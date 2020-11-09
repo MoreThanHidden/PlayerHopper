@@ -4,6 +4,7 @@ import morethanhidden.playerhopper.PlayerHopper;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
@@ -21,6 +22,7 @@ import java.util.stream.IntStream;
 public class PlayerHopperTileEntity extends HopperTileEntity {
     List<UUID> playerWhitelist = new ArrayList<>();
     List<String> itemBlacklist = new ArrayList<>();
+    PlayerHopperMode mode = PlayerHopperMode.INVENTORY;
 
 
     @Override
@@ -33,6 +35,7 @@ public class PlayerHopperTileEntity extends HopperTileEntity {
         for (int i = 0; i < compound.getInt("blacklist_size"); i++) {
             itemBlacklist.add(compound.getString("blacklist_" + i));
         }
+        mode = PlayerHopperMode.valueOf(compound.getString("mode"));
         super.read(state, compound);
     }
 
@@ -46,6 +49,7 @@ public class PlayerHopperTileEntity extends HopperTileEntity {
         for (int i = 0; i < itemBlacklist.size(); i++) {
             compound.putString("blacklist_" + i, itemBlacklist.get(i));
         }
+        compound.putString("mode", mode.name());
         return super.write(compound);
     }
 
@@ -56,19 +60,32 @@ public class PlayerHopperTileEntity extends HopperTileEntity {
             this.tickedGameTime = this.world.getGameTime();
             if (!this.isOnTransferCooldown()) {
                 this.setTransferCooldown(0);
-                this.updateHopper(() -> pullItems(this, itemBlacklist, playerWhitelist));
+                this.updateHopper(() -> pullItems(this, itemBlacklist, playerWhitelist, mode));
             }
 
         }
     }
 
-    public static boolean pullItems(IHopper hopper, List<String> itemBlacklist, List<UUID> playerWhitelist) {
+    public static boolean pullItems(IHopper hopper, List<String> itemBlacklist, List<UUID> playerWhitelist, PlayerHopperMode mode) {
         Boolean ret = net.minecraftforge.items.VanillaInventoryCodeHooks.extractHook(hopper);
         if (ret != null) return ret;
         IInventory iinventory = getSourceInventory(hopper, playerWhitelist);
-        if (iinventory != null) {
+        if (iinventory instanceof PlayerInventory) {
+            boolean output = false;
             Direction direction = Direction.DOWN;
-            return !isInventoryEmpty(iinventory, direction) && IntStream.range(0, iinventory.getSizeInventory()).anyMatch((slot) -> pullItemFromSlot(hopper, iinventory, slot, direction, itemBlacklist));
+            //Inventory
+            if(mode.equals(PlayerHopperMode.INVENTORY) || mode.equals(PlayerHopperMode.ARMOR_HOTBAR_INVENTORY) || mode.equals(PlayerHopperMode.ARMOR_INVENTORY) || mode.equals(PlayerHopperMode.HOTBAR_INVENTORY)) {
+                output = !isInventoryEmpty(iinventory, direction) && IntStream.range(9, 36).anyMatch((slot) -> pullItemFromSlot(hopper, iinventory, slot, direction, itemBlacklist));
+            }
+            //Hotbar
+            if(mode.equals(PlayerHopperMode.HOTBAR) || mode.equals(PlayerHopperMode.ARMOR_HOTBAR_INVENTORY) || mode.equals(PlayerHopperMode.HOTBAR_INVENTORY) || mode.equals(PlayerHopperMode.ARMOR_HOTBAR)){
+                output = !isInventoryEmpty(iinventory, direction) && IntStream.range(0, 9).anyMatch((slot) -> pullItemFromSlot(hopper, iinventory, slot, direction, itemBlacklist)) || output;
+            }
+            //Armor
+            if(mode.equals(PlayerHopperMode.ARMOR) || mode.equals(PlayerHopperMode.ARMOR_HOTBAR_INVENTORY) || mode.equals(PlayerHopperMode.ARMOR_INVENTORY) || mode.equals(PlayerHopperMode.ARMOR_HOTBAR)){
+                output = !isInventoryEmpty(iinventory, direction) && IntStream.range(36, 42).anyMatch((slot) -> pullItemFromSlot(hopper, iinventory, slot, direction, itemBlacklist)) || output;
+            }
+            return output;
         } else {
             for(ItemEntity itementity : getCaptureItems(hopper)) {
                 if (captureItem(hopper, itementity)) {
