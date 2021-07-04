@@ -12,6 +12,7 @@ import net.minecraft.tileentity.HopperTileEntity;
 import net.minecraft.tileentity.IHopper;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.Direction;
+import net.minecraftforge.items.VanillaInventoryCodeHooks;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -26,48 +27,48 @@ public class PlayerHopperTileEntity extends HopperTileEntity {
 
 
     @Override
-    public void read(BlockState state,  CompoundNBT compound) {
+    public void load(BlockState state,  CompoundNBT compound) {
         playerWhitelist = new ArrayList<>();
         for (int i = 0; i < compound.getInt("whitelist_size"); i++) {
-            playerWhitelist.add(compound.getUniqueId("whitelist_" + i));
+            playerWhitelist.add(compound.getUUID("whitelist_" + i));
         }
         itemBlacklist = new ArrayList<>();
         for (int i = 0; i < compound.getInt("blacklist_size"); i++) {
             itemBlacklist.add(compound.getString("blacklist_" + i));
         }
         mode = PlayerHopperMode.valueOf(compound.getString("mode"));
-        super.read(state, compound);
+        super.load(state, compound);
     }
 
     @Override
-    public CompoundNBT write(CompoundNBT compound) {
+    public CompoundNBT save(CompoundNBT compound) {
         compound.putInt("whitelist_size", playerWhitelist.size());
         for (int i = 0; i < playerWhitelist.size(); i++) {
-            compound.putUniqueId("whitelist_" + i, playerWhitelist.get(i));
+            compound.putUUID("whitelist_" + i, playerWhitelist.get(i));
         }
         compound.putInt("blacklist_size", itemBlacklist.size());
         for (int i = 0; i < itemBlacklist.size(); i++) {
             compound.putString("blacklist_" + i, itemBlacklist.get(i));
         }
         compound.putString("mode", mode.name());
-        return super.write(compound);
+        return super.save(compound);
     }
 
     @Override
     public void tick() {
-        if (this.world != null && !this.world.isRemote) {
-            --this.transferCooldown;
-            this.tickedGameTime = this.world.getGameTime();
-            if (!this.isOnTransferCooldown()) {
-                this.setTransferCooldown(0);
-                this.updateHopper(() -> pullItems(this, itemBlacklist, playerWhitelist, mode));
+        if (this.level != null && !this.level.isClientSide) {
+            --this.cooldownTime;
+            this.tickedGameTime = this.level.getGameTime();
+            if (!this.isOnCooldown()) {
+                this.setCooldown(0);
+                this.tryMoveItems(() -> pullItems(this, itemBlacklist, playerWhitelist, mode));
             }
 
         }
     }
 
     public static boolean pullItems(IHopper hopper, List<String> itemBlacklist, List<UUID> playerWhitelist, PlayerHopperMode mode) {
-        Boolean ret = net.minecraftforge.items.VanillaInventoryCodeHooks.extractHook(hopper);
+        Boolean ret = VanillaInventoryCodeHooks.extractHook(hopper);
         if (ret != null) return ret;
         IInventory iinventory = getSourceInventory(hopper, playerWhitelist);
         if (iinventory instanceof PlayerInventory) {
@@ -87,8 +88,8 @@ public class PlayerHopperTileEntity extends HopperTileEntity {
             }
             return output;
         } else {
-            for(ItemEntity itementity : getCaptureItems(hopper)) {
-                if (captureItem(hopper, itementity)) {
+            for(ItemEntity itementity : getItemsAtAndAbove(hopper)) {
+                if (addItem(hopper, itementity)) {
                     return true;
                 }
             }
@@ -102,16 +103,16 @@ public class PlayerHopperTileEntity extends HopperTileEntity {
      * entire stack was moved
      */
     private static boolean pullItemFromSlot(IHopper hopper, IInventory inventoryIn, int index, Direction direction, List<String> itemBlacklist) {
-        ItemStack itemstack = inventoryIn.getStackInSlot(index);
-        if (!itemstack.isEmpty() && !itemBlacklist.contains(itemstack.getItem().getTranslationKey())) {
+        ItemStack itemstack = inventoryIn.getItem(index);
+        if (!itemstack.isEmpty() && !itemBlacklist.contains(itemstack.getItem().getDescriptionId())) {
             ItemStack itemstack1 = itemstack.copy();
-            ItemStack itemstack2 = putStackInInventoryAllSlots(inventoryIn, hopper, inventoryIn.decrStackSize(index, 1), (Direction)null);
+            ItemStack itemstack2 = addItem(inventoryIn, hopper, inventoryIn.removeItem(index, 1), (Direction)null);
             if (itemstack2.isEmpty()) {
-                inventoryIn.markDirty();
+                inventoryIn.setChanged();
                 return true;
             }
 
-            inventoryIn.setInventorySlotContents(index, itemstack1);
+            inventoryIn.setItem(index, itemstack1);
         }
 
         return false;
@@ -121,15 +122,15 @@ public class PlayerHopperTileEntity extends HopperTileEntity {
      * Returns false if the specified IInventory contains any items
      */
     private static boolean isInventoryEmpty(IInventory inventoryIn, Direction side) {
-        return IntStream.range(0, inventoryIn.getSizeInventory()).allMatch(i -> inventoryIn.getStackInSlot(i).isEmpty());
+        return IntStream.range(0, inventoryIn.getContainerSize()).allMatch(i -> inventoryIn.getItem(i).isEmpty());
     }
 
 
     @Nullable
     public static IInventory getSourceInventory(IHopper hopper, List<UUID> playerWhitelist) {
-        if (hopper.getWorld() != null) {
-            PlayerEntity player = hopper.getWorld().getClosestPlayer(hopper.getXPos(), hopper.getYPos(), hopper.getZPos(), 1, false);
-            if(player != null && playerWhitelist.contains(player.getUniqueID()))
+        if (hopper.getLevel() != null) {
+            PlayerEntity player = hopper.getLevel().getNearestPlayer(hopper.getLevelX(), hopper.getLevelY(), hopper.getLevelZ(), 1, false);
+            if(player != null && playerWhitelist.contains(player.getUUID()))
                 return player.inventory;
         }
         return null;

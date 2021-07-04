@@ -47,12 +47,12 @@ public class PlayerHopper
     @SubscribeEvent
     @OnlyIn(Dist.CLIENT)
     public void itemColor(ColorHandlerEvent.Item event) {
-        event.getItemColors().register((itemStack, i) -> 3361970, Item.BLOCK_TO_ITEM.get(Blocks.playerhopper));
+        event.getItemColors().register((itemStack, i) -> 3361970, Item.BY_BLOCK.get(Blocks.playerhopper));
     }
 
     @ObjectHolder(MODID)
     public static class Items {
-        static final Item playerhopper = new BlockItem(Blocks.playerhopper, new Item.Properties().group(ItemGroup.REDSTONE)).setRegistryName("playerhopper:playerhopper");
+        static final Item playerhopper = new BlockItem(Blocks.playerhopper, new Item.Properties().tab(ItemGroup.TAB_REDSTONE)).setRegistryName("playerhopper:playerhopper");
     }
 
     @Mod.EventBusSubscriber(bus=Mod.EventBusSubscriber.Bus.MOD)
@@ -71,7 +71,7 @@ public class PlayerHopper
         @SuppressWarnings("ConstantConditions")
         @SubscribeEvent
         public static void onTileEntityTypeRegistry(final RegistryEvent.Register<TileEntityType<?>> event) {
-            event.getRegistry().register(TileEntityType.Builder.create(PlayerHopperTileEntity::new, Blocks.playerhopper).build(null).setRegistryName("playerhopper:playerhopper"));
+            event.getRegistry().register(TileEntityType.Builder.of(PlayerHopperTileEntity::new, Blocks.playerhopper).build(null).setRegistryName("playerhopper:playerhopper"));
         }
     }
 }
