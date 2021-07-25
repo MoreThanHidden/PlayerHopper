@@ -1,12 +1,12 @@
 package morethanhidden.playerhopper;
 
 import morethanhidden.playerhopper.blocks.PlayerHopperBlock;
-import morethanhidden.playerhopper.blocks.PlayerHopperTileEntity;
-import net.minecraft.block.Block;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.tileentity.TileEntityType;
+import morethanhidden.playerhopper.blocks.PlayerHopperBlockEntity;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.ColorHandlerEvent;
@@ -24,9 +24,10 @@ public class PlayerHopper
 {
     private static final Logger LOGGER = LogManager.getLogger();
     public static final String MODID = "playerhopper";
+    public static BlockEntityType PLAYERHOPPER_TYPE;
 
     @ObjectHolder("playerhopper:playerhopper")
-    public static TileEntityType<PlayerHopperTileEntity> PLAYER_HOPPER_TETYPE;
+    public static BlockEntityType<PlayerHopperBlockEntity> PLAYER_HOPPER_TETYPE;
 
     public PlayerHopper() {
         FMLJavaModLoadingContext.get().getModEventBus().register(this);
@@ -52,7 +53,7 @@ public class PlayerHopper
 
     @ObjectHolder(MODID)
     public static class Items {
-        static final Item playerhopper = new BlockItem(Blocks.playerhopper, new Item.Properties().tab(ItemGroup.TAB_REDSTONE)).setRegistryName("playerhopper:playerhopper");
+        static final Item playerhopper = new BlockItem(Blocks.playerhopper, new Item.Properties().tab(CreativeModeTab.TAB_REDSTONE)).setRegistryName("playerhopper:playerhopper");
     }
 
     @Mod.EventBusSubscriber(bus=Mod.EventBusSubscriber.Bus.MOD)
@@ -70,8 +71,9 @@ public class PlayerHopper
         }
         @SuppressWarnings("ConstantConditions")
         @SubscribeEvent
-        public static void onTileEntityTypeRegistry(final RegistryEvent.Register<TileEntityType<?>> event) {
-            event.getRegistry().register(TileEntityType.Builder.of(PlayerHopperTileEntity::new, Blocks.playerhopper).build(null).setRegistryName("playerhopper:playerhopper"));
+        public static void onTileEntityTypeRegistry(final RegistryEvent.Register<BlockEntityType<?>> event) {
+            PLAYERHOPPER_TYPE = BlockEntityType.Builder.of(PlayerHopperBlockEntity::new, Blocks.playerhopper).build(null).setRegistryName("playerhopper:playerhopper");
+            event.getRegistry().register(PLAYERHOPPER_TYPE);
         }
     }
 }

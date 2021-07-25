@@ -1,25 +1,27 @@
 package morethanhidden.playerhopper.blocks;
 
 import morethanhidden.playerhopper.PlayerHopper;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.HopperBlock;
-import net.minecraft.block.material.Material;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.loot.LootContext;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Hand;
-import net.minecraft.util.Util;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.HopperBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.HopperBlock;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.Util;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.world.level.Level;
 
-import java.util.List;
+import javax.annotation.Nullable;
+import java.util.Random;
 
 public class PlayerHopperBlock extends HopperBlock {
 
@@ -29,39 +31,45 @@ public class PlayerHopperBlock extends HopperBlock {
     }
 
     @Override
-    public TileEntity newBlockEntity(IBlockReader blockReader) {
-        return new PlayerHopperTileEntity();
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new PlayerHopperBlockEntity(pos, state);
+    }
+
+    @Nullable
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState blockState, BlockEntityType<T> blockEntityType) {
+        return level.isClientSide ? null : createTickerHelper(blockEntityType, PlayerHopper.PLAYERHOPPER_TYPE, PlayerHopperBlockEntity::pushItemsTick);
     }
 
     @SuppressWarnings("NullableProblems")
     @Override
-    public void setPlacedBy(World worldIn, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
+    public void setPlacedBy(Level worldIn, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(worldIn, pos, state, placer, stack);
-        TileEntity tileentity = worldIn.getBlockEntity(pos);
-        if (tileentity instanceof PlayerHopperTileEntity){
-            ((PlayerHopperTileEntity)tileentity).playerWhitelist.add(placer.getUUID());
+        BlockEntity tileentity = worldIn.getBlockEntity(pos);
+        if (tileentity instanceof PlayerHopperBlockEntity){
+            ((PlayerHopperBlockEntity)tileentity).playerWhitelist.add(placer.getUUID());
             tileentity.setChanged();
         }
     }
 
     @SuppressWarnings("NullableProblems")
     @Override
-    public ActionResultType use(BlockState state, World worldIn, BlockPos pos, PlayerEntity playerIn, Hand hand, BlockRayTraceResult rayTraceResult) {
+    public InteractionResult use(BlockState state, Level worldIn, BlockPos pos, Player playerIn, InteractionHand hand, BlockHitResult rayTraceResult) {
         if (playerIn.isCrouching()){
-            TileEntity tileentity = worldIn.getBlockEntity(pos);
-            if (tileentity instanceof PlayerHopperTileEntity && !worldIn.isClientSide){
+            BlockEntity tileentity = worldIn.getBlockEntity(pos);
+            if (tileentity instanceof PlayerHopperBlockEntity && !worldIn.isClientSide){
                 if(playerIn.getMainHandItem().isEmpty()){
-                    if(((PlayerHopperTileEntity) tileentity).playerWhitelist.contains(playerIn.getUUID())){
-                        ((PlayerHopperTileEntity)tileentity).playerWhitelist.remove(playerIn.getUUID());
-                        playerIn.sendMessage(new TranslationTextComponent("playerhopper.player.removed"), Util.NIL_UUID);
+                    if(((PlayerHopperBlockEntity) tileentity).playerWhitelist.contains(playerIn.getUUID())){
+                        ((PlayerHopperBlockEntity)tileentity).playerWhitelist.remove(playerIn.getUUID());
+                        playerIn.sendMessage(new TranslatableComponent("playerhopper.player.removed"), Util.NIL_UUID);
                     }else {
-                        ((PlayerHopperTileEntity) tileentity).playerWhitelist.add(playerIn.getUUID());
-                        playerIn.sendMessage(new TranslationTextComponent("playerhopper.player.added"), Util.NIL_UUID);
+                        ((PlayerHopperBlockEntity) tileentity).playerWhitelist.add(playerIn.getUUID());
+                        playerIn.sendMessage(new TranslatableComponent("playerhopper.player.added"), Util.NIL_UUID);
                     }
                     tileentity.setChanged();
                 }
             }
-            return ActionResultType.SUCCESS;
+            return InteractionResult.SUCCESS;
         }
 
         return super.use(state, worldIn, pos, playerIn, hand, rayTraceResult);
@@ -69,31 +77,31 @@ public class PlayerHopperBlock extends HopperBlock {
 
     @SuppressWarnings("deprecation")
     @Override
-    public void attack(BlockState state, World worldIn, BlockPos pos, PlayerEntity playerIn) {
+    public void attack(BlockState state, Level worldIn, BlockPos pos, Player playerIn) {
         if (playerIn.isCrouching() && !playerIn.getMainHandItem().isEmpty()) {
-            TileEntity tileentity = worldIn.getBlockEntity(pos);
-            if (tileentity instanceof PlayerHopperTileEntity && !worldIn.isClientSide) {
+            BlockEntity tileentity = worldIn.getBlockEntity(pos);
+            if (tileentity instanceof PlayerHopperBlockEntity && !worldIn.isClientSide) {
                 String itemName = playerIn.getMainHandItem().getItem().getDescriptionId();
-                if (((PlayerHopperTileEntity) tileentity).itemBlacklist.contains(itemName)) {
-                    ((PlayerHopperTileEntity) tileentity).itemBlacklist.remove(itemName);
-                    playerIn.sendMessage(new TranslationTextComponent("playerhopper.item.removed.begin")
-                            .append(new TranslationTextComponent(itemName))
-                            .append(new TranslationTextComponent("playerhopper.item.removed.end")), Util.NIL_UUID);
+                if (((PlayerHopperBlockEntity) tileentity).itemBlacklist.contains(itemName)) {
+                    ((PlayerHopperBlockEntity) tileentity).itemBlacklist.remove(itemName);
+                    playerIn.sendMessage(new TranslatableComponent("playerhopper.item.removed.begin")
+                            .append(new TranslatableComponent(itemName))
+                            .append(new TranslatableComponent("playerhopper.item.removed.end")), Util.NIL_UUID);
                 } else {
-                    ((PlayerHopperTileEntity) tileentity).itemBlacklist.add(itemName);
-                    playerIn.sendMessage(new TranslationTextComponent("playerhopper.item.added.begin")
-                            .append(new TranslationTextComponent(itemName))
-                            .append(new TranslationTextComponent("playerhopper.item.added.end")), Util.NIL_UUID);
+                    ((PlayerHopperBlockEntity) tileentity).itemBlacklist.add(itemName);
+                    playerIn.sendMessage(new TranslatableComponent("playerhopper.item.added.begin")
+                            .append(new TranslatableComponent(itemName))
+                            .append(new TranslatableComponent("playerhopper.item.added.end")), Util.NIL_UUID);
                 }
             }
         }else if(playerIn.isCrouching() && playerIn.getMainHandItem().isEmpty()){
-            TileEntity tileentity = worldIn.getBlockEntity(pos);
-            if (tileentity instanceof PlayerHopperTileEntity && !worldIn.isClientSide) {
+            BlockEntity tileentity = worldIn.getBlockEntity(pos);
+            if (tileentity instanceof PlayerHopperBlockEntity && !worldIn.isClientSide) {
                 //Change Hopper Mode
-                int currentMode = ((PlayerHopperTileEntity) tileentity).mode.ordinal();
+                int currentMode = ((PlayerHopperBlockEntity) tileentity).mode.ordinal();
                 int newMode = currentMode == PlayerHopperMode.values().length - 1 ? 0 : currentMode + 1;
-                ((PlayerHopperTileEntity) tileentity).mode = PlayerHopperMode.values()[newMode];
-                playerIn.sendMessage(new TranslationTextComponent("playerhopper.modechange").append(" ").append(new TranslationTextComponent("playerhopper.mode." + ((PlayerHopperTileEntity) tileentity).mode.name().toLowerCase())), Util.NIL_UUID);
+                ((PlayerHopperBlockEntity) tileentity).mode = PlayerHopperMode.values()[newMode];
+                playerIn.sendMessage(new TranslatableComponent("playerhopper.modechange").append(" ").append(new TranslatableComponent("playerhopper.mode." + ((PlayerHopperBlockEntity) tileentity).mode.name().toLowerCase())), Util.NIL_UUID);
                 tileentity.setChanged();
             }
         }

@@ -1,17 +1,19 @@
 package morethanhidden.playerhopper.blocks;
 
 import morethanhidden.playerhopper.PlayerHopper;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.item.ItemEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.HopperTileEntity;
-import net.minecraft.tileentity.IHopper;
-import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.block.entity.HopperBlockEntity;
+import net.minecraft.world.level.block.entity.Hopper;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.core.Direction;
 import net.minecraftforge.items.VanillaInventoryCodeHooks;
 
 import javax.annotation.Nullable;
@@ -20,14 +22,17 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.IntStream;
 
-public class PlayerHopperTileEntity extends HopperTileEntity {
+public class PlayerHopperBlockEntity extends HopperBlockEntity {
     List<UUID> playerWhitelist = new ArrayList<>();
     List<String> itemBlacklist = new ArrayList<>();
     PlayerHopperMode mode = PlayerHopperMode.INVENTORY;
 
+    public PlayerHopperBlockEntity(BlockPos pos, BlockState state) {
+        super(pos, state);
+    }
 
     @Override
-    public void load(BlockState state,  CompoundNBT compound) {
+    public void load(CompoundTag compound) {
         playerWhitelist = new ArrayList<>();
         for (int i = 0; i < compound.getInt("whitelist_size"); i++) {
             playerWhitelist.add(compound.getUUID("whitelist_" + i));
@@ -37,11 +42,11 @@ public class PlayerHopperTileEntity extends HopperTileEntity {
             itemBlacklist.add(compound.getString("blacklist_" + i));
         }
         mode = PlayerHopperMode.valueOf(compound.getString("mode"));
-        super.load(state, compound);
+        super.load(compound);
     }
 
     @Override
-    public CompoundNBT save(CompoundNBT compound) {
+    public CompoundTag save(CompoundTag compound) {
         compound.putInt("whitelist_size", playerWhitelist.size());
         for (int i = 0; i < playerWhitelist.size(); i++) {
             compound.putUUID("whitelist_" + i, playerWhitelist.get(i));
@@ -54,24 +59,22 @@ public class PlayerHopperTileEntity extends HopperTileEntity {
         return super.save(compound);
     }
 
-    @Override
-    public void tick() {
-        if (this.level != null && !this.level.isClientSide) {
-            --this.cooldownTime;
-            this.tickedGameTime = this.level.getGameTime();
-            if (!this.isOnCooldown()) {
-                this.setCooldown(0);
-                this.tryMoveItems(() -> pullItems(this, itemBlacklist, playerWhitelist, mode));
+    public static void pushItemsTick(Level level, BlockPos pos, BlockState state, HopperBlockEntity blockEntity) {
+        if (!level.isClientSide) {
+            --blockEntity.cooldownTime;
+            blockEntity.tickedGameTime = level.getGameTime();
+            if (!blockEntity.isOnCooldown()) {
+                blockEntity.setCooldown(0);
+                tryMoveItems(level, pos, state, blockEntity, () -> pullItems(level,blockEntity, ((PlayerHopperBlockEntity)blockEntity).itemBlacklist, ((PlayerHopperBlockEntity)blockEntity).playerWhitelist, ((PlayerHopperBlockEntity)blockEntity).mode));
             }
-
         }
     }
 
-    public static boolean pullItems(IHopper hopper, List<String> itemBlacklist, List<UUID> playerWhitelist, PlayerHopperMode mode) {
-        Boolean ret = VanillaInventoryCodeHooks.extractHook(hopper);
+    public static boolean pullItems(Level world, Hopper hopper, List<String> itemBlacklist, List<UUID> playerWhitelist, PlayerHopperMode mode) {
+        Boolean ret = VanillaInventoryCodeHooks.extractHook(world, hopper);
         if (ret != null) return ret;
-        IInventory iinventory = getSourceInventory(hopper, playerWhitelist);
-        if (iinventory instanceof PlayerInventory) {
+        Container iinventory = getSourceInventory(world, hopper, playerWhitelist);
+        if (iinventory instanceof Inventory) {
             boolean output = false;
             Direction direction = Direction.DOWN;
             //Inventory
@@ -88,7 +91,7 @@ public class PlayerHopperTileEntity extends HopperTileEntity {
             }
             return output;
         } else {
-            for(ItemEntity itementity : getItemsAtAndAbove(hopper)) {
+            for(ItemEntity itementity : getItemsAtAndAbove(world, hopper)) {
                 if (addItem(hopper, itementity)) {
                     return true;
                 }
@@ -102,7 +105,7 @@ public class PlayerHopperTileEntity extends HopperTileEntity {
      * Pulls from the specified slot in the inventory and places in any available slot in the hopper. Returns true if the
      * entire stack was moved
      */
-    private static boolean pullItemFromSlot(IHopper hopper, IInventory inventoryIn, int index, Direction direction, List<String> itemBlacklist) {
+    private static boolean pullItemFromSlot(Hopper hopper, Container inventoryIn, int index, Direction direction, List<String> itemBlacklist) {
         ItemStack itemstack = inventoryIn.getItem(index);
         if (!itemstack.isEmpty() && !itemBlacklist.contains(itemstack.getItem().getDescriptionId())) {
             ItemStack itemstack1 = itemstack.copy();
@@ -121,23 +124,23 @@ public class PlayerHopperTileEntity extends HopperTileEntity {
     /**
      * Returns false if the specified IInventory contains any items
      */
-    private static boolean isInventoryEmpty(IInventory inventoryIn, Direction side) {
+    private static boolean isInventoryEmpty(Container inventoryIn, Direction side) {
         return IntStream.range(0, inventoryIn.getContainerSize()).allMatch(i -> inventoryIn.getItem(i).isEmpty());
     }
 
 
     @Nullable
-    public static IInventory getSourceInventory(IHopper hopper, List<UUID> playerWhitelist) {
-        if (hopper.getLevel() != null) {
-            PlayerEntity player = hopper.getLevel().getNearestPlayer(hopper.getLevelX(), hopper.getLevelY(), hopper.getLevelZ(), 1, false);
+    public static Container getSourceInventory(Level world, Hopper hopper, List<UUID> playerWhitelist) {
+        if (world != null) {
+            Player player = world.getNearestPlayer(hopper.getLevelX(), hopper.getLevelY(), hopper.getLevelZ(), 1, false);
             if(player != null && playerWhitelist.contains(player.getUUID()))
-                return player.inventory;
+                return player.getInventory();
         }
         return null;
     }
 
     @Override
-    public TileEntityType<?> getType() {
+    public BlockEntityType<?> getType() {
         return PlayerHopper.PLAYER_HOPPER_TETYPE;
     }
 }
