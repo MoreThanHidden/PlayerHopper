@@ -2,6 +2,8 @@ package morethanhidden.playerhopper.blocks;
 
 import morethanhidden.playerhopper.PlayerHopper;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -46,7 +48,8 @@ public class PlayerHopperBlockEntity extends HopperBlockEntity {
     }
 
     @Override
-    public CompoundTag save(CompoundTag compound) {
+    protected void m_183515_(CompoundTag compound) {
+        super.m_183515_(compound);
         compound.putInt("whitelist_size", playerWhitelist.size());
         for (int i = 0; i < playerWhitelist.size(); i++) {
             compound.putUUID("whitelist_" + i, playerWhitelist.get(i));
@@ -56,7 +59,6 @@ public class PlayerHopperBlockEntity extends HopperBlockEntity {
             compound.putString("blacklist_" + i, itemBlacklist.get(i));
         }
         compound.putString("mode", mode.name());
-        return super.save(compound);
     }
 
     public static void pushItemsTick(Level level, BlockPos pos, BlockState state, HopperBlockEntity blockEntity) {

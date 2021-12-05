@@ -21,7 +21,6 @@ import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
-import java.util.Random;
 
 public class PlayerHopperBlock extends HopperBlock {
 

@@ -1,26 +1,26 @@
 buildscript {
     repositories {
-        maven { url = 'https://sizableshrimp.me/maven' }
+        maven { url = 'https://maven.parchmentmc.org' }
         maven { url = 'https://files.minecraftforge.net/maven' }
-        jcenter()
         mavenCentral()
     }
     dependencies {
-        classpath group: 'me.sizableshrimp.parchmenttest', name: 'ForgeGradle', version: '5.1.20', changing: true
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
+        classpath 'org.parchmentmc:librarian:1.+'
     }
 }
 apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'org.parchmentmc.librarian.forgegradle'
 apply plugin: 'eclipse'
-apply plugin: 'maven-publish'
 
-version = '1.17.1-1.7'
+version = '1.18-1.8'
 group = 'morethanhidden' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'playerhopper'
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(16)
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 minecraft {
-    mappings channel: 'parchment', version: '2021.07.21-1.17'
+    mappings channel: 'parchment', version: '2021.10.24-1.17.1'
 
     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
 
@@ -78,7 +78,7 @@ minecraft {
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.17.1-37.0.7'
+    minecraft 'net.minecraftforge:forge:1.18-38.0.14'
 }
 
 jar {
