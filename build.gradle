@@ -13,14 +13,14 @@ apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'org.parchmentmc.librarian.forgegradle'
 apply plugin: 'eclipse'
 
-version = '1.18-1.8'
+version = '1.18.2-1.8.1'
 group = 'morethanhidden' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'playerhopper'
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 minecraft {
-    mappings channel: 'parchment', version: '2021.10.24-1.17.1'
+    mappings channel: 'parchment', version: '2022.03.06-1.18.1'
 
     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
 
@@ -78,7 +78,7 @@ minecraft {
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.18-38.0.14'
+    minecraft 'net.minecraftforge:forge:1.18.2-40.0.12'
 }
 
 jar {
