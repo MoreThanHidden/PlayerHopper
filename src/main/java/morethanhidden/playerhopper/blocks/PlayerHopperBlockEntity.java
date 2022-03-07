@@ -48,8 +48,8 @@ public class PlayerHopperBlockEntity extends HopperBlockEntity {
     }
 
     @Override
-    protected void m_183515_(CompoundTag compound) {
-        super.m_183515_(compound);
+    protected void saveAdditional(CompoundTag compound) {
+        super.saveAdditional(compound);
         compound.putInt("whitelist_size", playerWhitelist.size());
         for (int i = 0; i < playerWhitelist.size(); i++) {
             compound.putUUID("whitelist_" + i, playerWhitelist.get(i));
