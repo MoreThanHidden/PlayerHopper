@@ -143,6 +143,6 @@ public class PlayerHopperBlockEntity extends HopperBlockEntity {
 
     @Override
     public BlockEntityType<?> getType() {
-        return PlayerHopper.PLAYER_HOPPER_TETYPE;
+        return PlayerHopper.BlockEntityTypes.PLAYER_HOPPER.get();
     }
 }

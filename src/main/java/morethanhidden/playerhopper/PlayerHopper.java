@@ -2,6 +2,7 @@ package morethanhidden.playerhopper;
 
 import morethanhidden.playerhopper.blocks.PlayerHopperBlock;
 import morethanhidden.playerhopper.blocks.PlayerHopperBlockEntity;
+import net.minecraft.client.Minecraft;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -11,11 +12,13 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.ColorHandlerEvent;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.ObjectHolder;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -24,58 +27,36 @@ public class PlayerHopper
 {
     private static final Logger LOGGER = LogManager.getLogger();
     public static final String MODID = "playerhopper";
-    public static BlockEntityType PLAYERHOPPER_TYPE;
-
-    @ObjectHolder("playerhopper:playerhopper")
-    public static BlockEntityType<PlayerHopperBlockEntity> PLAYER_HOPPER_TETYPE;
 
     public PlayerHopper() {
         FMLJavaModLoadingContext.get().getModEventBus().register(this);
         MinecraftForge.EVENT_BUS.register(this);
+        Blocks.BLOCKS.register(FMLJavaModLoadingContext.get().getModEventBus());
+        Items.ITEMS.register(FMLJavaModLoadingContext.get().getModEventBus());
+        BlockEntityTypes.BLOCK_ENTITYS.register(FMLJavaModLoadingContext.get().getModEventBus());
     }
 
-
-
-    @ObjectHolder(MODID)
     public static class Blocks {
-        static final Block playerhopper = new PlayerHopperBlock();
+        public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, "playerhopper");
+        static final RegistryObject<Block> PLAYER_HOPPER = BLOCKS.register("playerhopper", PlayerHopperBlock::new);
     }
 
-    @SubscribeEvent
-    @OnlyIn(Dist.CLIENT)
-    public void blockColor(ColorHandlerEvent.Block event) {
-        event.getBlockColors().register((blockState, iEnviromentBlockReader, blockPos, i) -> 3361970, Blocks.playerhopper);
-    }
-
-    @SubscribeEvent
-    @OnlyIn(Dist.CLIENT)
-    public void itemColor(ColorHandlerEvent.Item event) {
-        event.getItemColors().register((itemStack, i) -> 3361970, Item.BY_BLOCK.get(Blocks.playerhopper));
-    }
-
-    @ObjectHolder(MODID)
     public static class Items {
-        static final Item playerhopper = new BlockItem(Blocks.playerhopper, new Item.Properties().tab(CreativeModeTab.TAB_REDSTONE)).setRegistryName("playerhopper:playerhopper");
+        public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, "playerhopper");
+        static final RegistryObject<Item> PLAYER_HOPPER = ITEMS.register("playerhopper", () -> new BlockItem(Blocks.PLAYER_HOPPER.get(), new Item.Properties().tab(CreativeModeTab.TAB_REDSTONE)));
     }
 
-    @Mod.EventBusSubscriber(bus=Mod.EventBusSubscriber.Bus.MOD)
-    public static class RegistryEvents {
-
-        @SubscribeEvent
-        public static void onBlocksRegistry(final RegistryEvent.Register<Block> blockRegistryEvent) {
-            // register a new block here
-            blockRegistryEvent.getRegistry().register(Blocks.playerhopper);
-        }
-        @SubscribeEvent
-        public static void onItemRegistry(final RegistryEvent.Register<Item> blockRegistryEvent) {
-            // register a new block here
-            blockRegistryEvent.getRegistry().register(Items.playerhopper);
-        }
-        @SuppressWarnings("ConstantConditions")
-        @SubscribeEvent
-        public static void onTileEntityTypeRegistry(final RegistryEvent.Register<BlockEntityType<?>> event) {
-            PLAYERHOPPER_TYPE = BlockEntityType.Builder.of(PlayerHopperBlockEntity::new, Blocks.playerhopper).build(null).setRegistryName("playerhopper:playerhopper");
-            event.getRegistry().register(PLAYERHOPPER_TYPE);
-        }
+    public static class BlockEntityTypes {
+        public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITYS = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITIES, "playerhopper");
+        public static final RegistryObject<BlockEntityType<PlayerHopperBlockEntity>> PLAYER_HOPPER = BLOCK_ENTITYS.register("playerhopper", () -> BlockEntityType.Builder.of(PlayerHopperBlockEntity::new, Blocks.PLAYER_HOPPER.get()).build(null));
     }
+
+    @SubscribeEvent
+    @OnlyIn(Dist.CLIENT)
+    public void clientSetupEvent(FMLClientSetupEvent event) {
+      event.enqueueWork(() -> Minecraft.getInstance().getBlockColors().register((blockState, iEnviromentBlockReader, blockPos, i) -> 3361970, Blocks.PLAYER_HOPPER.get()));
+      event.enqueueWork(() -> Minecraft.getInstance().getItemColors().register((itemStack, i) -> 3361970, Item.BY_BLOCK.get(Blocks.PLAYER_HOPPER.get())));
+    }
+
+
 }

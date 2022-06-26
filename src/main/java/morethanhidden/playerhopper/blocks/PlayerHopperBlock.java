@@ -1,10 +1,9 @@
 package morethanhidden.playerhopper.blocks;
 
 import morethanhidden.playerhopper.PlayerHopper;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.HopperBlock;
 import net.minecraft.world.level.material.Material;
@@ -17,7 +16,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
@@ -26,7 +24,6 @@ public class PlayerHopperBlock extends HopperBlock {
 
     public PlayerHopperBlock() {
         super(Properties.of(Material.METAL).strength(3.0F));
-        setRegistryName(PlayerHopper.MODID, "playerhopper");
     }
 
     @Override
@@ -37,7 +34,7 @@ public class PlayerHopperBlock extends HopperBlock {
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState blockState, BlockEntityType<T> blockEntityType) {
-        return level.isClientSide ? null : createTickerHelper(blockEntityType, PlayerHopper.PLAYERHOPPER_TYPE, PlayerHopperBlockEntity::pushItemsTick);
+        return level.isClientSide ? null : createTickerHelper(blockEntityType, PlayerHopper.BlockEntityTypes.PLAYER_HOPPER.get(), PlayerHopperBlockEntity::pushItemsTick);
     }
 
     @SuppressWarnings("NullableProblems")
@@ -60,10 +57,10 @@ public class PlayerHopperBlock extends HopperBlock {
                 if(playerIn.getMainHandItem().isEmpty()){
                     if(((PlayerHopperBlockEntity) tileentity).playerWhitelist.contains(playerIn.getUUID())){
                         ((PlayerHopperBlockEntity)tileentity).playerWhitelist.remove(playerIn.getUUID());
-                        playerIn.sendMessage(new TranslatableComponent("playerhopper.player.removed"), Util.NIL_UUID);
+                        playerIn.sendSystemMessage(Component.translatable("playerhopper.player.removed"));
                     }else {
                         ((PlayerHopperBlockEntity) tileentity).playerWhitelist.add(playerIn.getUUID());
-                        playerIn.sendMessage(new TranslatableComponent("playerhopper.player.added"), Util.NIL_UUID);
+                        playerIn.sendSystemMessage(Component.translatable("playerhopper.player.added"));
                     }
                     tileentity.setChanged();
                 }
@@ -83,14 +80,14 @@ public class PlayerHopperBlock extends HopperBlock {
                 String itemName = playerIn.getMainHandItem().getItem().getDescriptionId();
                 if (((PlayerHopperBlockEntity) tileentity).itemBlacklist.contains(itemName)) {
                     ((PlayerHopperBlockEntity) tileentity).itemBlacklist.remove(itemName);
-                    playerIn.sendMessage(new TranslatableComponent("playerhopper.item.removed.begin")
-                            .append(new TranslatableComponent(itemName))
-                            .append(new TranslatableComponent("playerhopper.item.removed.end")), Util.NIL_UUID);
+                    playerIn.sendSystemMessage(Component.translatable("playerhopper.item.removed.begin")
+                            .append(Component.translatable(itemName))
+                            .append(Component.translatable("playerhopper.item.removed.end")));
                 } else {
                     ((PlayerHopperBlockEntity) tileentity).itemBlacklist.add(itemName);
-                    playerIn.sendMessage(new TranslatableComponent("playerhopper.item.added.begin")
-                            .append(new TranslatableComponent(itemName))
-                            .append(new TranslatableComponent("playerhopper.item.added.end")), Util.NIL_UUID);
+                    playerIn.sendSystemMessage(Component.translatable("playerhopper.item.added.begin")
+                            .append(Component.translatable(itemName))
+                            .append(Component.translatable("playerhopper.item.added.end")));
                 }
             }
         }else if(playerIn.isCrouching() && playerIn.getMainHandItem().isEmpty()){
@@ -100,7 +97,7 @@ public class PlayerHopperBlock extends HopperBlock {
                 int currentMode = ((PlayerHopperBlockEntity) tileentity).mode.ordinal();
                 int newMode = currentMode == PlayerHopperMode.values().length - 1 ? 0 : currentMode + 1;
                 ((PlayerHopperBlockEntity) tileentity).mode = PlayerHopperMode.values()[newMode];
-                playerIn.sendMessage(new TranslatableComponent("playerhopper.modechange").append(" ").append(new TranslatableComponent("playerhopper.mode." + ((PlayerHopperBlockEntity) tileentity).mode.name().toLowerCase())), Util.NIL_UUID);
+                playerIn.sendSystemMessage(Component.translatable("playerhopper.modechange").append(" ").append(Component.translatable("playerhopper.mode." + ((PlayerHopperBlockEntity) tileentity).mode.name().toLowerCase())));
                 tileentity.setChanged();
             }
         }
