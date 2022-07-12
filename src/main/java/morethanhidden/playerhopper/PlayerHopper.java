@@ -10,7 +10,6 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.ColorHandlerEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -47,7 +46,7 @@ public class PlayerHopper
     }
 
     public static class BlockEntityTypes {
-        public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITYS = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITIES, "playerhopper");
+        public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITYS = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, "playerhopper");
         public static final RegistryObject<BlockEntityType<PlayerHopperBlockEntity>> PLAYER_HOPPER = BLOCK_ENTITYS.register("playerhopper", () -> BlockEntityType.Builder.of(PlayerHopperBlockEntity::new, Blocks.PLAYER_HOPPER.get()).build(null));
     }
 
