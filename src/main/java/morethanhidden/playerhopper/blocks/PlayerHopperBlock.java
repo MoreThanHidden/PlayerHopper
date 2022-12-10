@@ -36,6 +36,9 @@ public class PlayerHopperBlock extends HopperBlock {
         return level.isClientSide ? null : createTickerHelper(blockEntityType, PlayerHopper.BlockEntityTypes.PLAYER_HOPPER.get(), PlayerHopperBlockEntity::pushItemsTick);
     }
 
+    /**
+     * Adds the player that placed the block UUID to a whitelist in the BlockEntity
+     */
     @SuppressWarnings("NullableProblems")
     @Override
     public void setPlacedBy(Level worldIn, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
@@ -47,6 +50,14 @@ public class PlayerHopperBlock extends HopperBlock {
         }
     }
 
+    /**
+     * Check if the player who interacted with the block entity is crouching, and if so,
+     * check if the player's UUID is already in the playerWhitelist.
+     * If it is, the UUID is removed from the list, and the player is sent a message.
+     * If the UUID is not present, it is added to the list, and the player is sent a different message.
+     * Then, the tileentity is marked as changed.
+     * If the player was not crouching, the super method is executed.
+     */
     @SuppressWarnings("NullableProblems")
     @Override
     public InteractionResult use(BlockState state, Level worldIn, BlockPos pos, Player playerIn, InteractionHand hand, BlockHitResult rayTraceResult) {
@@ -70,6 +81,13 @@ public class PlayerHopperBlock extends HopperBlock {
         return super.use(state, worldIn, pos, playerIn, hand, rayTraceResult);
     }
 
+    /**
+     * This code checks to see if the player is crouching on left click, and if they have an item in their main hand.
+     * If they do, it checks to see if the item is on the black list of the PlayerHopper BlockEntity.
+     * If it is, it removes it from the list.
+     * If it isn't, it adds it to the black list.
+     * If the player is crouching but has no item in their main hand, it changes the PlayerHopper BlockEntity's mode.
+     */
     @SuppressWarnings("deprecation")
     @Override
     public void attack(BlockState state, Level worldIn, BlockPos pos, Player playerIn) {

@@ -2,8 +2,6 @@ package morethanhidden.playerhopper.blocks;
 
 import morethanhidden.playerhopper.PlayerHopper;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -61,6 +59,12 @@ public class PlayerHopperBlockEntity extends HopperBlockEntity {
         compound.putString("mode", mode.name());
     }
 
+
+    /**
+     * This method is used to push items from a HopperBlockEntity to another inventory.
+     * It sets the cooldown of the blockEntity to 0 and calls the tryMoveItems and pullItems methods to
+     * try and move items between inventories if not on cooldown following the Player UUID Whitelist and Item Blacklist.
+     */
     public static void pushItemsTick(Level level, BlockPos pos, BlockState state, HopperBlockEntity blockEntity) {
         if (!level.isClientSide) {
             --blockEntity.cooldownTime;
@@ -72,6 +76,12 @@ public class PlayerHopperBlockEntity extends HopperBlockEntity {
         }
     }
 
+    /**
+     * Checks the mode specified, either inventory, hotbar, or armor, and checks for items in those slots.
+     * If any of the slots in the mode specified contain items it will attempt to add them to the hopper.
+     * If the inventory is not empty it adds the items and returns true, otherwise it will check for items above
+     * the hopper and attempt to add them.
+     */
     public static boolean pullItems(Level world, Hopper hopper, List<String> itemBlacklist, List<UUID> playerWhitelist, PlayerHopperMode mode) {
         Boolean ret = VanillaInventoryCodeHooks.extractHook(world, hopper);
         if (ret != null) return ret;
