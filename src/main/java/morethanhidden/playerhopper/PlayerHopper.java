@@ -59,8 +59,9 @@ public class PlayerHopper
 
     @SubscribeEvent
     public void creativeTabEvent(CreativeModeTabEvent.BuildContents event) {
-            event.registerSimple(CreativeModeTabs.REDSTONE_BLOCKS, Items.PLAYER_HOPPER.get());
+        if(event.getTab() == CreativeModeTabs.REDSTONE_BLOCKS) {
+            event.accept(Items.PLAYER_HOPPER.get());
+        }
     }
-
 
 }

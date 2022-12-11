@@ -13,7 +13,7 @@ apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'org.parchmentmc.librarian.forgegradle'
 apply plugin: 'eclipse'
 
-version = '1.19.3-1.9.3'
+version = '1.19.3-1.9.4'
 group = 'morethanhidden' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'playerhopper'
 
@@ -78,7 +78,7 @@ minecraft {
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.19.3-44.0.5'
+    minecraft 'net.minecraftforge:forge:1.19.3-44.0.6'
 }
 
 jar {
