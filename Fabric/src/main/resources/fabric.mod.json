@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "id": "playerhopper",
+  "version": "${version}",
+
+  "name": "PlayerHopper",
+  "description": "A hopper that pulls items from a player's inventory.",
+  "authors": [
+    "MoreThanHidden"
+  ],
+  "contact": {
+    "sources": "https://github.com/MoreThanHidden/PlayerHopper",
+    "issues": "https://github.com/MoreThanHidden/PlayerHopper/issues"
+  },
+
+  "license": "LGPLV3 license",
+  "icon": "logo.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "morethanhidden.playerhopper.PlayerHopper"
+    ]
+  },
+  "mixins": [
+  ],
+  "accessWidener": "playerhopper.accesswidener",
+
+  "depends": {
+    "fabricloader": ">=0.12",
+    "fabric": ">=0.68",
+    "minecraft": ">=1.19.2"
+  }
+}
