@@ -1,6 +1,5 @@
 package morethanhidden.playerhopper.blocks;
 
-import morethanhidden.playerhopper.PlayerHopper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -14,7 +13,6 @@ import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.block.entity.Hopper;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.core.Direction;
-import net.minecraftforge.items.VanillaInventoryCodeHooks;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -83,8 +81,6 @@ public class PlayerHopperBlockEntity extends HopperBlockEntity {
      * the hopper and attempt to add them.
      */
     public static boolean pullItems(Level world, Hopper hopper, List<String> itemBlacklist, List<UUID> playerWhitelist, PlayerHopperMode mode) {
-        Boolean ret = VanillaInventoryCodeHooks.extractHook(world, hopper);
-        if (ret != null) return ret;
         Container iinventory = getSourceInventory(world, hopper, playerWhitelist);
         if (iinventory instanceof Inventory) {
             boolean output = false;
@@ -153,6 +149,6 @@ public class PlayerHopperBlockEntity extends HopperBlockEntity {
 
     @Override
     public BlockEntityType<?> getType() {
-        return PlayerHopper.BlockEntityTypes.PLAYER_HOPPER.get();
+        return PlayerHopperBlockEntities.PLAYER_HOPPER;
     }
 }

@@ -1,6 +1,5 @@
 package morethanhidden.playerhopper.blocks;
 
-import morethanhidden.playerhopper.PlayerHopper;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -33,7 +32,7 @@ public class PlayerHopperBlock extends HopperBlock {
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState blockState, BlockEntityType<T> blockEntityType) {
-        return level.isClientSide ? null : createTickerHelper(blockEntityType, PlayerHopper.BlockEntityTypes.PLAYER_HOPPER.get(), PlayerHopperBlockEntity::pushItemsTick);
+        return level.isClientSide ? null : createTickerHelper(blockEntityType, PlayerHopperBlockEntities.PLAYER_HOPPER, PlayerHopperBlockEntity::pushItemsTick);
     }
 
     /**
