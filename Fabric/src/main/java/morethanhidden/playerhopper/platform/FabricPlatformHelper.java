@@ -1,5 +1,6 @@
 package morethanhidden.playerhopper.platform;
 import morethanhidden.playerhopper.platform.services.IPlatformHelper;
+import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Block;
@@ -30,6 +31,6 @@ public class FabricPlatformHelper implements IPlatformHelper {
 
     @Override
     public <T extends BlockEntity> BlockEntityType<T> createBlockEntityType(BiFunction<BlockPos, BlockState, T> func, Block... blocks) {
-        return null;
+        return FabricBlockEntityTypeBuilder.create(func::apply, blocks).build();
     }
 }

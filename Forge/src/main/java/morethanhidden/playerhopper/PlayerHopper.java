@@ -1,13 +1,13 @@
 package morethanhidden.playerhopper;
 
+import morethanhidden.playerhopper.blocks.PlayerHopperBlockEntities;
 import morethanhidden.playerhopper.blocks.PlayerHopperBlocks;
-import morethanhidden.playerhopper.platform.services.Services;
-import morethanhidden.playerhopper.platform.ForgePlatformHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.MinecraftForge;
@@ -28,6 +28,7 @@ public class PlayerHopper {
         MinecraftForge.EVENT_BUS.register(this);
         Blocks.BLOCKS.register(FMLJavaModLoadingContext.get().getModEventBus());
         Items.ITEMS.register(FMLJavaModLoadingContext.get().getModEventBus());
+        BlockEntities.TILE_ENTITIES.register(FMLJavaModLoadingContext.get().getModEventBus());
     }
 
     public static class Blocks {
@@ -38,6 +39,11 @@ public class PlayerHopper {
     public static class Items {
         public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, "playerhopper");
         static final RegistryObject<Item> PLAYER_HOPPER = ITEMS.register("playerhopper", () -> new BlockItem(PlayerHopperBlocks.PLAYER_HOPPER, new Item.Properties()));
+    }
+
+    public static class BlockEntities {
+        public static final DeferredRegister<BlockEntityType<?>> TILE_ENTITIES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, "playerhopper");
+        static final RegistryObject<BlockEntityType<?>> PLAYER_HOPPER = TILE_ENTITIES.register("playerhopper", () -> PlayerHopperBlockEntities.PLAYER_HOPPER);
     }
 
     //Register the color (3361970 / Blue) for the block (Player Hopper) and its corresponding item.
