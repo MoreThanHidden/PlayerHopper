@@ -17,6 +17,6 @@ pluginManagement {
 }
 
 rootProject.name = 'Player Hopper'
-include("common")
-include("fabric")
-include("forge")
+include("Common")
+include("Fabric")
+include("Forge")
