@@ -11,7 +11,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.CreativeModeTabEvent;
+import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -55,8 +55,8 @@ public class PlayerHopper {
     }
 
     @SubscribeEvent
-    public void creativeTabEvent(CreativeModeTabEvent.BuildContents event) {
-        if(event.getTab() == CreativeModeTabs.REDSTONE_BLOCKS) {
+    public void creativeTabEvent(BuildCreativeModeTabContentsEvent event) {
+        if(event.getTabKey() == CreativeModeTabs.REDSTONE_BLOCKS) {
             event.accept(Items.PLAYER_HOPPER.get());
         }
     }
