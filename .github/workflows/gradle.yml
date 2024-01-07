@@ -28,4 +28,5 @@ jobs:
           name: Package
           path: |
             Forge/build/libs
+            NeoForge/build/libs
             Fabric/build/libs

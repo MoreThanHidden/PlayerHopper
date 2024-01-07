@@ -6,6 +6,10 @@ pluginManagement {
             url = 'https://maven.neoforged.net/releases'
         }
         maven {
+            name = 'Forge'
+            url = 'https://maven.minecraftforge.net/'
+        }
+        maven {
             name = 'Fabric'
             url = 'https://maven.fabricmc.net/'
         }
@@ -20,3 +24,4 @@ rootProject.name = 'Player Hopper'
 include("Common")
 include("Fabric")
 include("Forge")
+include("NeoForge")
