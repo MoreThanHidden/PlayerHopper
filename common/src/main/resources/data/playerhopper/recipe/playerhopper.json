@@ -1,0 +1,19 @@
+{
+  "result": {
+    "id": "playerhopper:playerhopper"
+  },
+  "pattern": [
+    "l l",
+    "lhl",
+    " l "
+  ],
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "h": {
+      "item": "minecraft:hopper"
+    },
+    "l": {
+      "item": "minecraft:lapis_lazuli"
+    }
+  }
+}
