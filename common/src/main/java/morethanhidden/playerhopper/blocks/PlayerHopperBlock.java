@@ -1,6 +1,8 @@
 package morethanhidden.playerhopper.blocks;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -16,8 +18,8 @@ import net.minecraft.world.level.Level;
 
 public class PlayerHopperBlock extends HopperBlock {
 
-    public PlayerHopperBlock() {
-        super(Properties.of().strength(3.0F));
+    public PlayerHopperBlock(ResourceKey<Block> key) {
+        super(Properties.of().strength(3.0F).setId(key));
     }
 
     @Override
@@ -61,10 +63,10 @@ public class PlayerHopperBlock extends HopperBlock {
                 if(playerIn.getMainHandItem().isEmpty()){
                     if(((PlayerHopperBlockEntity) tileentity).playerWhitelist.contains(playerIn.getUUID())){
                         ((PlayerHopperBlockEntity)tileentity).playerWhitelist.remove(playerIn.getUUID());
-                        playerIn.sendSystemMessage(Component.translatable("playerhopper.player.removed"));
+                        playerIn.displayClientMessage(Component.translatable("playerhopper.player.removed"), false);
                     }else {
                         ((PlayerHopperBlockEntity) tileentity).playerWhitelist.add(playerIn.getUUID());
-                        playerIn.sendSystemMessage(Component.translatable("playerhopper.player.added"));
+                        playerIn.displayClientMessage(Component.translatable("playerhopper.player.added"), false);
                     }
                     tileentity.setChanged();
                 }
@@ -82,7 +84,6 @@ public class PlayerHopperBlock extends HopperBlock {
      * If it isn't, it adds it to the black list.
      * If the player is crouching but has no item in their main hand, it changes the PlayerHopper BlockEntity's mode.
      */
-    @SuppressWarnings("deprecation")
     @Override
     public void attack(BlockState state, Level worldIn, BlockPos pos, Player playerIn) {
         if (playerIn.isCrouching() && !playerIn.getMainHandItem().isEmpty()) {
@@ -91,14 +92,14 @@ public class PlayerHopperBlock extends HopperBlock {
                 String itemName = playerIn.getMainHandItem().getItem().getDescriptionId();
                 if (((PlayerHopperBlockEntity) tileentity).itemBlacklist.contains(itemName)) {
                     ((PlayerHopperBlockEntity) tileentity).itemBlacklist.remove(itemName);
-                    playerIn.sendSystemMessage(Component.translatable("playerhopper.item.removed.begin")
+                    playerIn.displayClientMessage(Component.translatable("playerhopper.item.removed.begin")
                             .append(Component.translatable(itemName))
-                            .append(Component.translatable("playerhopper.item.removed.end")));
+                            .append(Component.translatable("playerhopper.item.removed.end")), false);
                 } else {
                     ((PlayerHopperBlockEntity) tileentity).itemBlacklist.add(itemName);
-                    playerIn.sendSystemMessage(Component.translatable("playerhopper.item.added.begin")
+                    playerIn.displayClientMessage(Component.translatable("playerhopper.item.added.begin")
                             .append(Component.translatable(itemName))
-                            .append(Component.translatable("playerhopper.item.added.end")));
+                            .append(Component.translatable("playerhopper.item.added.end")), false);
                 }
             }
         }else if(playerIn.isCrouching() && playerIn.getMainHandItem().isEmpty()){
@@ -108,7 +109,7 @@ public class PlayerHopperBlock extends HopperBlock {
                 int currentMode = ((PlayerHopperBlockEntity) tileentity).mode.ordinal();
                 int newMode = currentMode == PlayerHopperMode.values().length - 1 ? 0 : currentMode + 1;
                 ((PlayerHopperBlockEntity) tileentity).mode = PlayerHopperMode.values()[newMode];
-                playerIn.sendSystemMessage(Component.translatable("playerhopper.modechange").append(" ").append(Component.translatable("playerhopper.mode." + ((PlayerHopperBlockEntity) tileentity).mode.name().toLowerCase())));
+                playerIn.displayClientMessage(Component.translatable("playerhopper.modechange").append(" ").append(Component.translatable("playerhopper.mode." + ((PlayerHopperBlockEntity) tileentity).mode.name().toLowerCase())), false);
                 tileentity.setChanged();
             }
         }

@@ -9,11 +9,7 @@
   ],
   "type": "minecraft:crafting_shaped",
   "key": {
-    "h": {
-      "item": "minecraft:hopper"
-    },
-    "l": {
-      "item": "minecraft:lapis_lazuli"
-    }
+    "h": "minecraft:hopper",
+    "l": "minecraft:lapis_lazuli"
   }
 }

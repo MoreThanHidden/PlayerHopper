@@ -1,5 +1,6 @@
 {
   "block.playerhopper.playerhopper": "Player Hopper",
+  "item.playerhopper.playerhopper": "Player Hopper",
   "playerhopper.player.added": "You have been added to the Player Hopper's Whitelist",
   "playerhopper.player.removed": "You have been removed from the Player Hopper's Whitelist",
   "playerhopper.item.added.begin": "Added ",

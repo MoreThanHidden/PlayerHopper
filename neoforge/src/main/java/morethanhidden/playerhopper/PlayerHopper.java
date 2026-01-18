@@ -9,8 +9,6 @@ import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
@@ -36,7 +34,7 @@ public class PlayerHopper {
 
     public static class Items {
         public static final DeferredRegister<Item> ITEMS = DeferredRegister.createItems("playerhopper");
-        static final DeferredHolder<Item, Item> PLAYER_HOPPER = ITEMS.register("playerhopper", () -> new BlockItem(PlayerHopperBlocks.PLAYER_HOPPER, new Item.Properties()));
+        static final DeferredHolder<Item, Item> PLAYER_HOPPER = ITEMS.register("playerhopper", () -> new BlockItem(PlayerHopperBlocks.PLAYER_HOPPER, new Item.Properties().setId(PlayerHopperBlocks.ITEM_KEY)));
     }
 
     public static class BlockEntities {
@@ -46,10 +44,8 @@ public class PlayerHopper {
 
     //Register the color (3361970 / Blue) for the block (Player Hopper) and its corresponding item.
     @SubscribeEvent
-    @OnlyIn(Dist.CLIENT)
     public void clientSetupEvent(FMLClientSetupEvent event) {
         event.enqueueWork(() -> Minecraft.getInstance().getBlockColors().register((blockState, iEnviromentBlockReader, blockPos, i) -> 3361970, Blocks.PLAYER_HOPPER.get()));
-        event.enqueueWork(() -> Minecraft.getInstance().getItemColors().register((itemStack, i) -> 3361970, Item.BY_BLOCK.get(Blocks.PLAYER_HOPPER.get())));
     }
 
     @SubscribeEvent
@@ -58,6 +54,5 @@ public class PlayerHopper {
             event.accept(Items.PLAYER_HOPPER.get());
         }
     }
-
 
 }

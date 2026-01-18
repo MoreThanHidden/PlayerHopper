@@ -1,19 +1,20 @@
 package morethanhidden.playerhopper.blocks;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.Container;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.level.block.entity.HopperBlockEntity;
-import net.minecraft.world.level.block.entity.Hopper;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.core.Direction;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.world.Container;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.Hopper;
+import net.minecraft.world.level.block.entity.HopperBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,31 +31,45 @@ public class PlayerHopperBlockEntity extends HopperBlockEntity {
     }
 
     @Override
-    public void loadAdditional(CompoundTag compound, HolderLookup.Provider provider) {
-        playerWhitelist = new ArrayList<>();
-        for (int i = 0; i < compound.getInt("whitelist_size"); i++) {
-            playerWhitelist.add(compound.getUUID("whitelist_" + i));
-        }
-        itemBlacklist = new ArrayList<>();
-        for (int i = 0; i < compound.getInt("blacklist_size"); i++) {
-            itemBlacklist.add(compound.getString("blacklist_" + i));
-        }
-        mode = PlayerHopperMode.valueOf(compound.getString("mode"));
-        super.loadAdditional(compound, provider);
+    public boolean isValidBlockState(BlockState state) {
+        return getType().isValid(state);
     }
 
     @Override
-    protected void saveAdditional(CompoundTag compound, HolderLookup.Provider provider) {
-        super.saveAdditional(compound, provider);
-        compound.putInt("whitelist_size", playerWhitelist.size());
+    protected void loadAdditional(ValueInput input) {
+        playerWhitelist = new ArrayList<>();
+        int whitelistSize = input.getIntOr("whitelist_size", 0);
+        for (int i = 0; i < whitelistSize; i++) {
+            UUID uuid = input.read("whitelist_" + i, UUIDUtil.CODEC).orElse(null);
+            if (uuid != null) playerWhitelist.add(uuid);
+        }
+        itemBlacklist = new ArrayList<>();
+        int blacklistSize = input.getIntOr("blacklist_size", 0);
+        for (int i = 0; i < blacklistSize; i++) {
+            String id = input.getStringOr("blacklist_" + i, "");
+            if (!id.isEmpty()) itemBlacklist.add(id);
+        }
+        String modeName = input.getStringOr("mode", PlayerHopperMode.INVENTORY.name());
+        try {
+            mode = PlayerHopperMode.valueOf(modeName);
+        } catch (IllegalArgumentException ignored) {
+            mode = PlayerHopperMode.INVENTORY;
+        }
+        super.loadAdditional(input);
+    }
+
+    @Override
+    protected void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        output.putInt("whitelist_size", playerWhitelist.size());
         for (int i = 0; i < playerWhitelist.size(); i++) {
-            compound.putUUID("whitelist_" + i, playerWhitelist.get(i));
+            output.store("whitelist_" + i, UUIDUtil.CODEC, playerWhitelist.get(i));
         }
-        compound.putInt("blacklist_size", itemBlacklist.size());
+        output.putInt("blacklist_size", itemBlacklist.size());
         for (int i = 0; i < itemBlacklist.size(); i++) {
-            compound.putString("blacklist_" + i, itemBlacklist.get(i));
+            output.putString("blacklist_" + i, itemBlacklist.get(i));
         }
-        compound.putString("mode", mode.name());
+        output.putString("mode", mode.name());
     }
 
 
@@ -135,7 +150,6 @@ public class PlayerHopperBlockEntity extends HopperBlockEntity {
     private static boolean isInventoryEmpty(Container inventoryIn, Direction side) {
         return IntStream.range(0, inventoryIn.getContainerSize()).allMatch(i -> inventoryIn.getItem(i).isEmpty());
     }
-
 
     public static Container getSourceInventory(Level world, Hopper hopper, List<UUID> playerWhitelist) {
         if (world != null) {
