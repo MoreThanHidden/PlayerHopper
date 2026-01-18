@@ -79,7 +79,7 @@ public class PlayerHopperBlockEntity extends HopperBlockEntity {
      * try and move items between inventories if not on cooldown following the Player UUID Whitelist and Item Blacklist.
      */
     public static void pushItemsTick(Level level, BlockPos pos, BlockState state, HopperBlockEntity blockEntity) {
-        if (!level.isClientSide) {
+        if (!level.isClientSide()) {
             --blockEntity.cooldownTime;
             blockEntity.tickedGameTime = level.getGameTime();
             if (!blockEntity.isOnCooldown()) {

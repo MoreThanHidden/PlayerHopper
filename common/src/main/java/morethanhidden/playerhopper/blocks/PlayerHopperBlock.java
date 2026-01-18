@@ -29,7 +29,7 @@ public class PlayerHopperBlock extends HopperBlock {
 
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState blockState, BlockEntityType<T> blockEntityType) {
-        return level.isClientSide ? null : createTickerHelper(blockEntityType, PlayerHopperBlockEntities.PLAYER_HOPPER, PlayerHopperBlockEntity::pushItemsTick);
+        return level.isClientSide() ? null : createTickerHelper(blockEntityType, PlayerHopperBlockEntities.PLAYER_HOPPER, PlayerHopperBlockEntity::pushItemsTick);
     }
 
     /**
@@ -59,7 +59,7 @@ public class PlayerHopperBlock extends HopperBlock {
     protected InteractionResult useWithoutItem(BlockState state, Level worldIn, BlockPos pos, Player playerIn, BlockHitResult rayTraceResult) {
         if (playerIn.isCrouching()){
             BlockEntity tileentity = worldIn.getBlockEntity(pos);
-            if (tileentity instanceof PlayerHopperBlockEntity && !worldIn.isClientSide){
+            if (tileentity instanceof PlayerHopperBlockEntity && !worldIn.isClientSide()){
                 if(playerIn.getMainHandItem().isEmpty()){
                     if(((PlayerHopperBlockEntity) tileentity).playerWhitelist.contains(playerIn.getUUID())){
                         ((PlayerHopperBlockEntity)tileentity).playerWhitelist.remove(playerIn.getUUID());
@@ -88,7 +88,7 @@ public class PlayerHopperBlock extends HopperBlock {
     public void attack(BlockState state, Level worldIn, BlockPos pos, Player playerIn) {
         if (playerIn.isCrouching() && !playerIn.getMainHandItem().isEmpty()) {
             BlockEntity tileentity = worldIn.getBlockEntity(pos);
-            if (tileentity instanceof PlayerHopperBlockEntity && !worldIn.isClientSide) {
+            if (tileentity instanceof PlayerHopperBlockEntity && !worldIn.isClientSide()) {
                 String itemName = playerIn.getMainHandItem().getItem().getDescriptionId();
                 if (((PlayerHopperBlockEntity) tileentity).itemBlacklist.contains(itemName)) {
                     ((PlayerHopperBlockEntity) tileentity).itemBlacklist.remove(itemName);
@@ -104,7 +104,7 @@ public class PlayerHopperBlock extends HopperBlock {
             }
         }else if(playerIn.isCrouching() && playerIn.getMainHandItem().isEmpty()){
             BlockEntity tileentity = worldIn.getBlockEntity(pos);
-            if (tileentity instanceof PlayerHopperBlockEntity && !worldIn.isClientSide) {
+            if (tileentity instanceof PlayerHopperBlockEntity && !worldIn.isClientSide()) {
                 //Change Hopper Mode
                 int currentMode = ((PlayerHopperBlockEntity) tileentity).mode.ordinal();
                 int newMode = currentMode == PlayerHopperMode.values().length - 1 ? 0 : currentMode + 1;
